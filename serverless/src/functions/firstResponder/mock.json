@@ -1,6 +1,7 @@
 {
-  "headers": {
-    "Content-Type": "application/json"
-  },
-  "body": "{\"name\": \"Frederic\"}"
+    "body": "Any Data",
+    "pathParameters": {
+        "username": "munsman",
+        "functionId": "test123"
+    }
 }

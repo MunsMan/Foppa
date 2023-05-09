@@ -1,14 +1,16 @@
 import type { AWS } from '@serverless/typescript';
 
 import firstResponder from '@functions/firstResponder';
+import createFunction from '@functions/createFunction';
 
 const serverlessConfiguration: AWS = {
     service: 'foppa',
     frameworkVersion: '3',
-    plugins: ['serverless-esbuild'],
+    plugins: ['serverless-esbuild', 'serverless-offline-redis-server'],
     provider: {
         name: 'aws',
-        runtime: 'nodejs14.x',
+        profile: 'foppa',
+        runtime: 'nodejs18.x',
         apiGateway: {
             minimumCompressionSize: 1024,
             shouldStartNameWithService: true,
@@ -29,7 +31,7 @@ const serverlessConfiguration: AWS = {
         }
     },
     // import the function via paths
-    functions: { firstResponder },
+    functions: { firstResponder, createFunction },
     package: { individually: true },
     custom: {
         esbuild: {
@@ -37,11 +39,17 @@ const serverlessConfiguration: AWS = {
             minify: false,
             sourcemap: true,
             exclude: ['aws-sdk'],
-            target: 'node14',
+            target: 'node18',
             define: { 'require.resolve': undefined },
             platform: 'node',
             concurrency: 10,
         },
+        redis: {
+
+        },
+        'serverless-offline-sns': {
+
+        }
     },
 };
 

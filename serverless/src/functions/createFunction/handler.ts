@@ -2,20 +2,26 @@ import type { ValidatedEventAPIGatewayProxyEvent } from '@libs/api-gateway';
 import { formatJSONResponse } from '@libs/api-gateway';
 import { middyfy } from '@libs/lambda';
 import { createClient } from 'redis';
-import { SNSClient, PublishCommand } from "@aws-sdk/client-sns";
+import schema from './schema'
 
+const REDIS_URL = process.env.REDIS_URL
 
-
-const createFunction: ValidatedEventAPIGatewayProxyEvent<any> = async (event) => {
-    const sns = new SNSClient({ region: 'us-east-1' })
-    const redis = createClient({ url: "rediss://redis-cluster-0001-001.redis-cluster.b5z3ub.use1.cache.amazonaws.com:6379" });
-    console.log(event)
+const createFunction: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (event) => {
+    const redis = createClient({ url: REDIS_URL });
+    const username = event.pathParameters.username;
+    const functionId = event.body.functionId
     await redis.connect();
     let key = `eid:${username}/${functionId}`;
-    redis.set(key, 0)
+    if ((await redis.exists(key))) {
+        await redis.disconnect();
+        return formatJSONResponse({
+            message: 'Function already exists',
+        })
+    }
+    await redis.set(key, 0)
     await redis.disconnect();
     return formatJSONResponse({
-        message: `Hello, you did something wrong!`,
+        message: 'Function created',
     });
 };
 
