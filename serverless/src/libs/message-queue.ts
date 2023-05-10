@@ -1,12 +1,13 @@
 import type { SNSClient, PublishCommandInput } from '@aws-sdk/client-sns'
 import { PublishCommand } from '@aws-sdk/client-sns'
 
-export const sendMessage = async (sns: SNSClient, topicArn: string, message: Object) => {
+
+export const sendMessage = async (client: SNSClient, topicArn: string, message: Object) => {
     const input: PublishCommandInput = {
         TopicArn: topicArn,
         Message: JSON.stringify(message)
     }
     const command = new PublishCommand(input)
-    const response = await sns.send(command)
+    const response = await client.send(command)
     return response.MessageId ?? ""
 }
