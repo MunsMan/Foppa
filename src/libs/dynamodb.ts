@@ -3,12 +3,12 @@ import { marshall, unmarshall } from "@aws-sdk/util-dynamodb"
 import type { GetItemCommandInput, PutItemCommandInput } from "@aws-sdk/client-dynamodb";
 import variables from "variables";
 
-type DBTables = 'FunctionExecutionCounter'
+type DBTables = 'FunctionExecutionCounter' | 'FunctionUrl'
 type QueryParams = { [key in string]: string | number }
 
 const db = new DynamoDBClient({ region: variables.REGION });
 
-export const getValue = async (table: DBTables, params: QueryParams) => {
+export const getValue = async <T>(table: DBTables, params: QueryParams): Promise<T | undefined> => {
     const input: GetItemCommandInput = {
         TableName: table,
         Key: marshall(params)
@@ -16,7 +16,7 @@ export const getValue = async (table: DBTables, params: QueryParams) => {
     };
     const command = new GetItemCommand(input)
     const response = await db.send(command)
-    return response
+    return unmarshall(response.Item) as T
 }
 
 export const putValue = async (table: DBTables, item: QueryParams) => {
