@@ -1,5 +1,0 @@
-# First Responder
-
-
-## Deployment
-
