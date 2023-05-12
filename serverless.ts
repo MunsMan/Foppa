@@ -3,6 +3,7 @@ import type { AWS } from '@serverless/typescript';
 import firstResponder from '@functions/firstResponder';
 import createFunction from '@functions/createFunction';
 import scheduler from '@functions/scheduler';
+import runner from '@functions/runner';
 
 const serverlessConfiguration: AWS = {
     service: 'foppa',
@@ -25,7 +26,7 @@ const serverlessConfiguration: AWS = {
         },
     },
     // import the function via paths
-    functions: { firstResponder, createFunction, scheduler },
+    functions: { firstResponder, createFunction, scheduler, runner },
     package: { individually: true },
     custom: {
         esbuild: {
