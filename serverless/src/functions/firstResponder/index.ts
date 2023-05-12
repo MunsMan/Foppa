@@ -19,7 +19,6 @@ export default {
     ],
     environment:
     {
-        REDIS_URL: variables.REDIS_URL,
         REGION: variables.REGION,
         TOPIC: variables.OPTIMIZATION_REQUEST_TOPIC_ARN
     }

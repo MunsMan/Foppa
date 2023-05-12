@@ -1,7 +1,7 @@
 {
     "body": "Any Data",
     "pathParameters": {
-        "username": "munsman",
+        "username": "test",
         "functionId": "test123"
     }
 }

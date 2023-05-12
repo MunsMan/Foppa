@@ -6,9 +6,6 @@ export default {
     events: [
         { sns: { arn: variables.OPTIMIZATION_REQUEST_TOPIC_ARN } }
     ],
-    destinations: {
-        onSuccess: variables.RUN_REQUEST_TOPIC_ARN
-    },
     environment:
     {
     }

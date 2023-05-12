@@ -7,7 +7,7 @@ import scheduler from '@functions/scheduler';
 const serverlessConfiguration: AWS = {
     service: 'foppa',
     frameworkVersion: '3',
-    plugins: ['serverless-esbuild', 'serverless-offline-redis-server'],
+    plugins: ['serverless-esbuild'],
     provider: {
         name: 'aws',
         profile: 'foppa',
@@ -23,13 +23,6 @@ const serverlessConfiguration: AWS = {
         iam: {
             role: "arn:aws:iam::807699729275:role/LabRole",
         },
-        vpc: {
-            securityGroupIds: ["sg-05bfc8f4b1874318d"],
-            subnetIds: [
-                "subnet-005bf572305e89cb5",
-                "subnet-03fdbbe61d5b5302b"
-            ]
-        }
     },
     // import the function via paths
     functions: { firstResponder, createFunction, scheduler },
@@ -44,9 +37,6 @@ const serverlessConfiguration: AWS = {
             define: { 'require.resolve': undefined },
             platform: 'node',
             concurrency: 10,
-        },
-        redis: {
-
         },
         'serverless-offline-sns': {
 
