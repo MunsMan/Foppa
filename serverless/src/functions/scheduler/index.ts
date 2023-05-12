@@ -8,5 +8,6 @@ export default {
     ],
     environment:
     {
+        TOPIC: variables.RUN_REQUEST_TOPIC_ARN
     }
 };
