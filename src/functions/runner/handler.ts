@@ -5,7 +5,7 @@ import fetch from 'node-fetch'
 
 const runner = async (event: SNSEvent) => {
     const input: FunctionRunRequest = JSON.parse(event.Records[0].Sns.Message)
-    const dbResponse = await getValue<RegionRunnerUrlValue>('FunctionUrl', { uFunctionId: `${input.username}`, pregion: `${input.deployment.provider}-${input.deployment.region}` })
+    const dbResponse = await getValue<RegionRunnerUrlValue>('RegionRunnerURL', { uFunctionId: `${input.username}`, pregion: `${input.deployment.provider}-${input.deployment.region}` })
     if (input.body) {
         await fetch(dbResponse.url, {
             method: 'POST',

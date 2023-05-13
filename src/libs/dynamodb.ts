@@ -3,7 +3,7 @@ import { marshall, unmarshall } from "@aws-sdk/util-dynamodb"
 import type { GetItemCommandInput, PutItemCommandInput } from "@aws-sdk/client-dynamodb";
 import variables from "variables";
 
-type DBTables = 'FunctionExecutionCounter' | 'FunctionUrl'
+type DBTables = 'FunctionExecutionCounter' | 'FunctionUrl' | 'RegionRunnerURL'
 type QueryParams = { [key in string]: string | number }
 
 const db = new DynamoDBClient({ region: variables.REGION });
