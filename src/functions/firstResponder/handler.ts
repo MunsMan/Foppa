@@ -13,7 +13,7 @@ const firstResponder: APIGatewayProxyEvent = async (event) => {
     if (entry.executionCounter) {
         const executionId = await incrValue('FunctionExecutionCounter', { username, functionId }, 'executionCounter')
         const message: OptimizationRequest = {
-            username, functionId, executionId, body: event.body
+            username, functionId, executionId, payload: event.body
         }
         await sendMessage(TOPIC, message)
         return formatJSONResponse(message);

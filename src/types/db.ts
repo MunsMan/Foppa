@@ -8,4 +8,5 @@ interface RegionRunnerUrlValue {
     username: string;
     pregion: string;
     url: string;
+    functionName: string;
 }

@@ -2,7 +2,7 @@ export interface OptimizationRequest {
     username: string;
     functionId: string;
     executionId: string;
-    body?: string;
+    payload?: string;
 }
 
 type CloudProvider = 'aws'
