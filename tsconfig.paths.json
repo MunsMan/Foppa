@@ -1,9 +1,16 @@
 {
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@functions/*": ["src/functions/*"],
-      "@libs/*": ["src/libs/*"]
+    "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            "@functions/*": [
+                "src/functions/*"
+            ],
+            "@libs/*": [
+                "src/libs/*"
+            ],
+            "@ptypes/*": [
+                "src/types/*"
+            ]
+        }
     }
-  }
 }

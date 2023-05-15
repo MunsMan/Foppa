@@ -1,18 +1,19 @@
-import type { ValidatedEventAPIGatewayProxyEvent } from '@libs/api-gateway';
+import type { APIGatewayProxyEvent } from '@libs/api-gateway';
 import { formatJSONResponse } from '@libs/api-gateway';
 import { getValue, incrValue } from '@libs/dynamodb';
 import { sendMessage } from '@libs/message-queue';
+import type { OptimizationRequest } from '@ptypes/sns';
 
 const TOPIC = process.env.TOPIC
 
-const firstResponder: ValidatedEventAPIGatewayProxyEvent<any> = async (event) => {
+const firstResponder: APIGatewayProxyEvent = async (event) => {
     const { username, functionId } = event.pathParameters
 
-    const entry = await getValue('FunctionExecutionCounter', { username, functionId })
-    if (entry.Item) {
+    const entry = await getValue<FunctionExecutionCounterValue>('FunctionExecutionCounter', { username, functionId })
+    if (entry.executionCounter) {
         const executionId = await incrValue('FunctionExecutionCounter', { username, functionId }, 'executionCounter')
-        const message = {
-            username, functionId, executionId
+        const message: OptimizationRequest = {
+            username, functionId, executionId, payload: event.body
         }
         await sendMessage(TOPIC, message)
         return formatJSONResponse(message);

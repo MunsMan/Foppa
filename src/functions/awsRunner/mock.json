@@ -1,0 +1,6 @@
+{
+    "headers": {
+        "Content-Type": "application/json"
+    },
+    "body": "{\"functionName\":\"502graph-mst\",\"payload\":\"{\"size\":\"32\"}\"}"
+}

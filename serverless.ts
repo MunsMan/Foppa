@@ -3,6 +3,9 @@ import type { AWS } from '@serverless/typescript';
 import firstResponder from '@functions/firstResponder';
 import createFunction from '@functions/createFunction';
 import scheduler from '@functions/scheduler';
+import runner from '@functions/runner';
+import awsRunner from '@functions/awsRunner';
+import awsReturner from '@functions/awsReturner';
 
 const serverlessConfiguration: AWS = {
     service: 'foppa',
@@ -25,7 +28,7 @@ const serverlessConfiguration: AWS = {
         },
     },
     // import the function via paths
-    functions: { firstResponder, createFunction, scheduler },
+    functions: { firstResponder, createFunction, scheduler, runner, awsRunner, awsReturner },
     package: { individually: true },
     custom: {
         esbuild: {
@@ -38,10 +41,14 @@ const serverlessConfiguration: AWS = {
             platform: 'node',
             concurrency: 10,
         },
-        'serverless-offline-sns': {
-
-        }
     },
+    resources: {
+        Resources: {
+            'foppa-logs': {
+                Type: 'AWS::S3::Bucket'
+            }
+        }
+    }
 };
 
 module.exports = serverlessConfiguration;
