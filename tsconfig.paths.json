@@ -7,9 +7,6 @@
             ],
             "@libs/*": [
                 "src/libs/*"
-            ],
-            "@ptypes/*": [
-                "src/types/*"
             ]
         }
     }

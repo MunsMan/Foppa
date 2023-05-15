@@ -6,6 +6,7 @@ import scheduler from '@functions/scheduler';
 import runner from '@functions/runner';
 import awsRunner from '@functions/awsRunner';
 import awsReturner from '@functions/awsReturner';
+import optimizationRequest from '@functions/logging/optimizationRequest';
 
 const serverlessConfiguration: AWS = {
     service: 'foppa',
@@ -28,7 +29,7 @@ const serverlessConfiguration: AWS = {
         },
     },
     // import the function via paths
-    functions: { firstResponder, createFunction, scheduler, runner, awsRunner, awsReturner },
+    functions: { firstResponder, createFunction, scheduler, runner, awsRunner, awsReturner, optimizationRequest },
     package: { individually: true },
     custom: {
         esbuild: {
@@ -44,8 +45,11 @@ const serverlessConfiguration: AWS = {
     },
     resources: {
         Resources: {
-            'foppa-logs': {
-                Type: 'AWS::S3::Bucket'
+            LogBucket: {
+                Type: 'AWS::S3::Bucket',
+                Properties: {
+                    BucketName: 'foppa-logs'
+                }
             }
         }
     }

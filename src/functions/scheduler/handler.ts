@@ -1,5 +1,5 @@
 import type { SNSEvent } from 'aws-lambda';
-import { sendMessage } from '@libs/message-queue';
+import { sendMessage } from '@libs/sns';
 import type { FunctionRunRequest, OptimizationRequest } from '@ptypes/sns';
 
 const TOPIC = process.env.TOPIC;
