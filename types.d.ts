@@ -1,13 +1,20 @@
-interface OptimizationRequest {
+interface OptimizationRequest extends GeneralRequest {
+    logs: OptimizationRequestLog;
+}
+
+interface GeneralRequest {
     username: string;
     functionId: string;
     executionId: string;
     payload?: string;
-    logs: OptimizationRequestLog;
 }
 
 interface OptimizationRequestLog extends ApplicationLog {
     body: boolean,
+}
+
+
+interface FunctionRequestLog extends ApplicationLog {
 }
 
 interface ApplicationLog extends Log {
@@ -17,11 +24,12 @@ interface ApplicationLog extends Log {
 
 type CloudProvider = 'aws'
 
-interface FunctionRunRequest extends OptimizationRequest {
+interface FunctionRunRequest extends GeneralRequest {
     deployment: {
         provider: CloudProvider;
         region: string;
-    }
+    },
+    logs: FunctionRequestLog
 }
 
 interface LogIdentifier {
