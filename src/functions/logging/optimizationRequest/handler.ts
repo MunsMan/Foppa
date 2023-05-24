@@ -3,16 +3,18 @@ import type { SNSEvent } from "aws-lambda";
 
 const optimizationRequest = async (event: SNSEvent) => {
     const { username, functionId, executionId, logs } = JSON.parse(event.Records[0].Sns.Message) as OptimizationRequest;
+    const { executionStart, executionEnd, body } = logs;
     const log = {
         username,
         functionId,
         executionId,
+        body,
         firstResponder: {
-            ...logs
+            executionStart,
+            executionEnd
         }
     }
-    console.log(log)
-    return await putLog('foppa-logs', { username, functionId, executionId }, log)
+    return await putLog('foppa-logs', { username, functionId, executionId }, log);
 
 }
 
