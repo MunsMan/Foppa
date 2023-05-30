@@ -3,7 +3,7 @@ import { marshall, unmarshall } from "@aws-sdk/util-dynamodb"
 import type { GetItemCommandInput, PutItemCommandInput } from "@aws-sdk/client-dynamodb";
 import variables from "variables";
 
-type DBTables = 'FunctionExecutionCounter' | 'FunctionUrl' | 'RegionRunnerURL'
+type DBTables = 'FunctionExecutionCounter' | 'FunctionUrl' | 'RegionRunnerURL' | 'RegionExecutionCounter'
 type QueryParams = { [key in string]: string | number }
 
 const db = new DynamoDBClient({ region: variables.REGION });
@@ -35,6 +35,21 @@ export const incrValue = async (table: DBTables, item: QueryParams, key: string)
         TableName: table,
         Key: marshall(item),
         UpdateExpression: `SET ${key} = if_not_exists(${key}, :initial) + :num`,
+        ExpressionAttributeValues: marshall({
+            ':num': 1,
+            ':initial': 0
+        }),
+        ReturnValues: "ALL_NEW",
+    }
+    const response = await db.send(new UpdateItemCommand(input))
+    return unmarshall(response.Attributes)[key]
+}
+
+export const decrValue = async (table: DBTables, item: QueryParams, key: string) => {
+    const input: UpdateItemCommandInput = {
+        TableName: table,
+        Key: marshall(item),
+        UpdateExpression: `SET ${key} = if_not_exists(${key}, :initial) - :num`,
         ExpressionAttributeValues: marshall({
             ':num': 1,
             ':initial': 0
