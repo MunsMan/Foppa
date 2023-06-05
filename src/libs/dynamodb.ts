@@ -30,7 +30,18 @@ export const putValue = async (table: DBTables, item: QueryParams) => {
     return response
 }
 
-export const incrValue = async (table: DBTables, item: QueryParams, key: string) => {
+
+type ItemQueryParams<T extends DBTables> =
+    T extends 'RegionExecutionCounter' ? { uFunctionId: string, pregion: string } :
+    T extends 'FunctionExecutionCounter' ? { username: string, functionId: string } :
+    never;
+
+type ValueKey<T extends DBTables> =
+    T extends 'RegionExecutionCounter' ? 'executionCounter' :
+    T extends 'FunctionExecutionCounter' ? 'executionCounter' :
+    never;
+
+export const incrValue = async<T extends DBTables>(table: T, item: ItemQueryParams<T>, key: ValueKey<T>) => {
     const input: UpdateItemCommandInput = {
         TableName: table,
         Key: marshall(item),
@@ -45,7 +56,7 @@ export const incrValue = async (table: DBTables, item: QueryParams, key: string)
     return unmarshall(response.Attributes)[key]
 }
 
-export const decrValue = async (table: DBTables, item: QueryParams, key: string) => {
+export const decrValue = async<T extends DBTables>(table: T, item: ItemQueryParams<T>, key: ValueKey<T>) => {
     const input: UpdateItemCommandInput = {
         TableName: table,
         Key: marshall(item),
