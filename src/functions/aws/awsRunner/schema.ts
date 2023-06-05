@@ -8,6 +8,6 @@ export default {
         payload: { type: 'string' }
     },
     required: [
-        'functionName', 'username'
+        'functionName', 'uFunctionId', 'pregion', 'executionId'
     ]
 } as const;

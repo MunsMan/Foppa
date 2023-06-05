@@ -12,9 +12,11 @@ const awsRunner: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (even
         body: event.body.payload,
         headers: {},
         metadata: {
+            functionName: event.body.functionName,
             uFunctionId: event.body.uFunctionId,
             executionId: event.body.executionId,
-            pregion: event.body.pregion
+            pregion: event.body.pregion,
+            executionStart: Date.now()
         }
     }
     const input: InvokeCommandInput = {
