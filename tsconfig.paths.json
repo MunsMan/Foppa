@@ -7,6 +7,9 @@
             ],
             "@libs/*": [
                 "src/libs/*"
+            ],
+            "@errors/*": [
+                "src/errors/*"
             ]
         }
     }
