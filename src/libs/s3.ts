@@ -10,13 +10,17 @@ interface LogIdentifier {
     executionId: string;
 }
 
-export const appendLog = async (bucket: Bucket, logId: LogIdentifier, event: string, log: Log) => {
+export const LogEventTypes = ['firstResponder', 'functionRunner', 'executionTrigger', 'finished'] as const;
+
+type LogEvents = typeof LogEventTypes[number];
+
+export const appendLog = async (bucket: Bucket, logId: LogIdentifier, event: LogEvents, log: Log) => {
     const logfile = await getLog(bucket, logId);
     logfile[event] = log;
     return await putLog(bucket, logId, logfile)
 }
 'foppa-logs'
-const getLog = async (bucket: Bucket, logId: LogIdentifier) => {
+export const getLog = async (bucket: Bucket, logId: LogIdentifier) => {
     const { username, functionId, executionId } = logId
     const key = `${username}/${functionId}/${executionId}.json`
     const file = await getFile(bucket, key)
