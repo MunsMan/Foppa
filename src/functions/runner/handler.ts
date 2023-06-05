@@ -1,12 +1,16 @@
-import { getValue } from '@libs/dynamodb';
-import type { FunctionRunRequest } from '@ptypes/sns';
+import { getValue, incrValue } from '@libs/dynamodb';
+import { toUFunctionId } from '@libs/parser';
+import { appendLog } from '@libs/s3';
 import type { SNSEvent } from 'aws-lambda';
 import fetch from 'node-fetch'
 
 const runner = async (event: SNSEvent) => {
-    const input: FunctionRunRequest = JSON.parse(event.Records[0].Sns.Message)
-    const dbResponse = await getValue<RegionRunnerUrlValue>('RegionRunnerURL', { username: `${input.username}`, pregion: `${input.deployment.provider}-${input.deployment.region}` })
-    console.log(input)
+    const { username, deployment, functionId, payload, executionId }: FunctionRunRequest = JSON.parse(event.Records[0].Sns.Message)
+    console.log(event.Records[0].Sns)
+    const pregion = `${deployment.provider}-${deployment.region}`;
+    const uFunctionId = toUFunctionId(username, functionId);
+    const dbResponse = await getValue<RegionRunnerUrlValue>('RegionRunnerURL', { username, pregion });
+    const currentRegionLoad = await incrValue('RegionExecutionCounter', { uFunctionId, pregion }, 'executionCounter')
     const response = await fetch(dbResponse.url, {
         method: 'POST',
         headers: {
@@ -14,12 +18,24 @@ const runner = async (event: SNSEvent) => {
             'Accept': 'application/json'
         },
         body: JSON.stringify({
-            payload: input.payload,
-            functionName: dbResponse.functionName
+            payload,
+            functionName: dbResponse.functionName,
+            uFunctionId,
+            pregion,
+            executionId
         })
-    })
-    console.log(response)
-    return input;
+    });
+    await appendLog(
+        'foppa-logs',
+        { username, functionId, executionId },
+        'executionTrigger',
+        {
+            url: response.url,
+            status: response.status,
+            currentRegionLoad
+        }
+    )
+    return event;
 };
 
 export const main = runner;
