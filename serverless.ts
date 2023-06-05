@@ -9,6 +9,7 @@ import awsRunner from '@functions/aws/awsRunner';
 import awsReturner from '@functions/aws/awsReturner';
 import optimizationRequest from '@functions/logging/optimizationRequest';
 import runRequest from '@functions/logging/runRequest';
+import status from '@functions/status';
 
 const serverlessConfiguration: AWS = {
     service: 'foppa',
@@ -31,7 +32,7 @@ const serverlessConfiguration: AWS = {
         },
     },
     // import the function via paths
-    functions: { firstResponder, createFunction, scheduler, runner, awsRunner, awsReturner, optimizationRequest, runRequest, returner },
+    functions: { firstResponder, createFunction, scheduler, runner, awsRunner, awsReturner, optimizationRequest, runRequest, returner, status },
     package: { individually: true },
     custom: {
         esbuild: {
