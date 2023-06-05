@@ -4,8 +4,9 @@ import firstResponder from '@functions/firstResponder';
 import createFunction from '@functions/createFunction';
 import scheduler from '@functions/scheduler';
 import runner from '@functions/runner';
-import awsRunner from '@functions/awsRunner';
-import awsReturner from '@functions/awsReturner';
+import returner from '@functions/returner';
+import awsRunner from '@functions/aws/awsRunner';
+import awsReturner from '@functions/aws/awsReturner';
 import optimizationRequest from '@functions/logging/optimizationRequest';
 import runRequest from '@functions/logging/runRequest';
 
@@ -30,7 +31,7 @@ const serverlessConfiguration: AWS = {
         },
     },
     // import the function via paths
-    functions: { firstResponder, createFunction, scheduler, runner, awsRunner, awsReturner, optimizationRequest, runRequest },
+    functions: { firstResponder, createFunction, scheduler, runner, awsRunner, awsReturner, optimizationRequest, runRequest, returner },
     package: { individually: true },
     custom: {
         esbuild: {
