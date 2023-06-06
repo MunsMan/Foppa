@@ -1,4 +1,5 @@
 import { S3Client, PutObjectCommand, PutObjectCommandInput, GetObjectCommand, GetObjectCommandInput } from '@aws-sdk/client-s3'
+import { LogNotFound } from '@errors/aws';
 
 type Bucket = 'foppa-logs'
 
@@ -19,23 +20,31 @@ export const appendLog = async (bucket: Bucket, logId: LogIdentifier, event: Log
     logfile[event] = log;
     return await putLog(bucket, logId, logfile)
 }
-'foppa-logs'
+
+
 export const getLog = async (bucket: Bucket, logId: LogIdentifier) => {
     const { username, functionId, executionId } = logId
     const key = `${username}/${functionId}/${executionId}.json`
     const file = await getFile(bucket, key)
-    const logfile: Log = JSON.parse(file)
-    return logfile
+    if (file) {
+        const logfile: Log = JSON.parse(file)
+        return logfile
+    }
+    LogNotFound(logId);
 }
 
 
-const getFile = async (bucket: Bucket, key: string) => {
+const getFile = async (bucket: Bucket, key: string): Promise<string | undefined> => {
     const input: GetObjectCommandInput = {
         Bucket: bucket,
         Key: key
     }
-    const response = await s3.send(new GetObjectCommand(input))
-    return response.Body.transformToString()
+    try {
+        const response = await s3.send(new GetObjectCommand(input))
+        return response.Body.transformToString()
+    } catch {
+        return undefined
+    }
 }
 
 export const putLog = async (bucket: Bucket, logId: LogIdentifier, log: Log) => {
