@@ -4,18 +4,23 @@ import { getLog, LogEventTypes } from "@libs/s3";
 const status: ValidatedEventAPIGatewayProxyEvent<null> = async (event) => {
     const { username, functionId, executionId } = event.pathParameters;
     const log = await getLog('foppa-logs', { username, functionId, executionId });
-    console.log(log)
+    const status = {
+        status: 'unknown',
+        steps: { done: -1, from: LogEventTypes.length - 1 }
+    }
     if (!log) {
         return formatJSONResponse({ status: 'unknown' }, 400)
     }
-    let done = 0;
-    console.log(Object.keys(log))
-    for (let event in LogEventTypes) {
+    for (const event of LogEventTypes) {
+        console.log(event)
         if (!Object.keys(log).includes(event)) break
-        done++;
+        status.steps.done++;
+        status.status = LogEventTypes[status.steps.done]
     }
-    console.log(log)
-    return formatJSONResponse({ status: LogEventTypes[done], steps: { done, from: LogEventTypes.length }, message: '' })
+    if (status.status === 'finished') {
+        status.payload = log.finished.response.result
+    }
+    return formatJSONResponse(status)
 };
 
 export const main = status;
