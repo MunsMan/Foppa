@@ -13,3 +13,9 @@ export const unableToFindLogGroup = (logGroups: LogGroup[]): never => {
     }
     return exit()
 }
+
+
+export const LogNotFound = (logIdentifier: LogIdentifier): never => {
+    console.log(`ERROR: Log not Found!\n${logIdentifier}`)
+    return exit()
+}
