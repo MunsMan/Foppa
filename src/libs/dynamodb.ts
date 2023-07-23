@@ -3,7 +3,7 @@ import { marshall, unmarshall } from "@aws-sdk/util-dynamodb"
 import type { GetItemCommandInput, PutItemCommandInput } from "@aws-sdk/client-dynamodb";
 import variables from "variables";
 
-type DBTables = 'FunctionExecutionCounter' | 'FunctionUrl' | 'RegionRunnerURL' | 'RegionExecutionCounter'
+type DBTables = 'FunctionExecutionCounter' | 'FunctionUrl' | 'RegionRunnerURL' | 'RegionExecutionCounter' | 'UserManager'
 type QueryParams = { [key in string]: string | number }
 
 const db = new DynamoDBClient({ region: variables.REGION });
@@ -34,11 +34,13 @@ export const putValue = async (table: DBTables, item: QueryParams) => {
 type ItemQueryParams<T extends DBTables> =
     T extends 'RegionExecutionCounter' ? { uFunctionId: string, pregion: string } :
     T extends 'FunctionExecutionCounter' ? { username: string, functionId: string } :
+    T extends 'UserManager' ? { username: string } :
     never;
 
 type ValueKey<T extends DBTables> =
     T extends 'RegionExecutionCounter' ? 'executionCounter' :
     T extends 'FunctionExecutionCounter' ? 'executionCounter' :
+    T extends 'UserManager' ? 'functionCounter' :
     never;
 
 export const incrValue = async<T extends DBTables>(table: T, item: ItemQueryParams<T>, key: ValueKey<T>) => {
