@@ -13,5 +13,6 @@ export default {
     ],
     environment:
     {
+        deploymentId: '${sls:instanceId}'
     }
 };

@@ -5,5 +5,5 @@
     "pathParameters": {
         "username": "munsman"
     },
-    "body": "{\"functionId\":\"test123\"}"
+    "body": "{\"code\":{\"bucket\":\"foppa-deployment-dev\",key:\"serverless/foppa/dev/1686654784726-2023-06-13T11:13:04.726Z/status.zip\"},\"role\":\"arn:aws:iam::807699729275:role/LabRole\",\"runtime\":\"nodejs18.x\",\"functionName\":\"test\",\"region\":\"us-east-2\"}"
 }
