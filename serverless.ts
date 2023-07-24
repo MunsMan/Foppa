@@ -19,6 +19,7 @@ const serverlessConfiguration: AWS = {
         name: 'aws',
         profile: 'foppa',
         runtime: 'nodejs18.x',
+        stage: 'dev',
         apiGateway: {
             minimumCompressionSize: 1024,
             shouldStartNameWithService: true,
@@ -30,6 +31,9 @@ const serverlessConfiguration: AWS = {
         iam: {
             role: "arn:aws:iam::807699729275:role/LabRole",
         },
+        deploymentBucket: {
+            name: '${self:service}-deployment-${self:provider.stage}'
+        }
     },
     // import the function via paths
     functions: { firstResponder, createFunction, scheduler, runner, awsRunner, awsReturner, optimizationRequest, runRequest, returner, status },
@@ -53,6 +57,80 @@ const serverlessConfiguration: AWS = {
                 Properties: {
                     BucketName: 'foppa-logs'
                 }
+            },
+            FunctionExecutionCounter: {
+                Type: 'AWS::DynamoDB::Table',
+                Properties: {
+                    TableName: 'FunctionExecutionCounter',
+                    AttributeDefinitions: [
+                        { AttributeName: 'username', AttributeType: 'S' },
+                        { AttributeName: 'functionId', AttributeType: 'S' },
+                        // { AttributeName: 'executionCounter', AttributeType: 'N' },
+                    ],
+                    KeySchema: [
+                        { AttributeName: 'username', KeyType: 'HASH' },
+                        { AttributeName: 'functionId', KeyType: 'RANGE' },
+                    ],
+                    ProvisionedThroughput: {
+                        ReadCapacityUnits: 5,
+                        WriteCapacityUnits: 5
+                    },
+                },
+            },
+            regionExecutionCounter: {
+                Type: 'AWS::DynamoDB::Table',
+                Properties: {
+                    TableName: 'RegionExecutionCounter',
+                    AttributeDefinitions: [
+                        { AttributeName: 'uFunctionId', AttributeType: 'S' },
+                        { AttributeName: 'pregion', AttributeType: 'S' },
+                        // { AttributeName: 'executionCounter', AttributeType: 'N' },
+                    ],
+                    KeySchema: [
+                        { AttributeName: 'uFunctionId', KeyType: 'HASH' },
+                        { AttributeName: 'pregion', KeyType: 'RANGE' },
+                    ],
+                    ProvisionedThroughput: {
+                        ReadCapacityUnits: 5,
+                        WriteCapacityUnits: 5
+                    },
+                },
+            },
+            RegionRunnerURL: {
+                Type: 'AWS::DynamoDB::Table',
+                Properties: {
+                    TableName: 'RegionRunnerURL',
+                    AttributeDefinitions: [
+                        { AttributeName: 'username', AttributeType: 'S' },
+                        { AttributeName: 'pregion', AttributeType: 'S' },
+                        // { AttributeName: 'functionName', AttributeType: 'S' },
+                        // { AttributeName: 'url', AttributeType: 'S' },
+                    ],
+                    KeySchema: [
+                        { AttributeName: 'username', KeyType: 'HASH' },
+                        { AttributeName: 'pregion', KeyType: 'RANGE' },
+                    ],
+                    ProvisionedThroughput: {
+                        ReadCapacityUnits: 5,
+                        WriteCapacityUnits: 5
+                    },
+                },
+            },
+            UserManager: {
+                Type: 'AWS::DynamoDB::Table',
+                Properties: {
+                    TableName: 'UserManager',
+                    AttributeDefinitions: [
+                        { AttributeName: 'username', AttributeType: 'S' },
+                    ],
+                    KeySchema: [
+                        { AttributeName: 'username', KeyType: 'HASH' },
+                    ],
+                    ProvisionedThroughput: {
+                        ReadCapacityUnits: 5,
+                        WriteCapacityUnits: 5
+                    },
+                },
             }
         }
     }
