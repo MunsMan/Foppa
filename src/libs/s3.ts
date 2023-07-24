@@ -1,5 +1,7 @@
 import { S3Client, PutObjectCommand, PutObjectCommandInput, GetObjectCommand, GetObjectCommandInput } from '@aws-sdk/client-s3'
 import { LogNotFound } from '@errors/aws';
+import * as path from 'path'
+import * as fs from 'fs'
 
 type Bucket = 'foppa-logs'
 
@@ -61,4 +63,16 @@ const putFile = async (bucket: Bucket, key: string, file: string) => {
     }
     const response = await s3.send(new PutObjectCommand(input))
     return response.ETag
+}
+
+
+export const uploadCodeS3 = async (s3Client: S3Client, functionName: string, code: string, bucket: string, username: string) => {
+    const file = path.resolve(code);
+    const body = fs.readFileSync(file)
+    const response = await s3Client.send(new PutObjectCommand({
+        Body: body,
+        Key: `upload/${username}/${functionName}.zip`,
+        Bucket: bucket
+    }));
+    return response;
 }
