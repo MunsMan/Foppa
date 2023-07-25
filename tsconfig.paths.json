@@ -8,8 +8,8 @@
             "@libs/*": [
                 "src/libs/*"
             ],
-            "@ptypes/*": [
-                "src/types/*"
+            "@errors/*": [
+                "src/errors/*"
             ]
         }
     }

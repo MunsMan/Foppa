@@ -4,8 +4,12 @@ import firstResponder from '@functions/firstResponder';
 import createFunction from '@functions/createFunction';
 import scheduler from '@functions/scheduler';
 import runner from '@functions/runner';
-import awsRunner from '@functions/awsRunner';
-import awsReturner from '@functions/awsReturner';
+import returner from '@functions/returner';
+import awsRunner from '@functions/aws/awsRunner';
+import awsReturner from '@functions/aws/awsReturner';
+import optimizationRequest from '@functions/logging/optimizationRequest';
+import runRequest from '@functions/logging/runRequest';
+import status from '@functions/status';
 
 const serverlessConfiguration: AWS = {
     service: 'foppa',
@@ -15,6 +19,7 @@ const serverlessConfiguration: AWS = {
         name: 'aws',
         profile: 'foppa',
         runtime: 'nodejs18.x',
+        stage: 'dev',
         apiGateway: {
             minimumCompressionSize: 1024,
             shouldStartNameWithService: true,
@@ -26,9 +31,12 @@ const serverlessConfiguration: AWS = {
         iam: {
             role: "arn:aws:iam::807699729275:role/LabRole",
         },
+        deploymentBucket: {
+            name: '${self:service}-deployment-${self:provider.stage}'
+        }
     },
     // import the function via paths
-    functions: { firstResponder, createFunction, scheduler, runner, awsRunner, awsReturner },
+    functions: { firstResponder, createFunction, scheduler, runner, awsRunner, awsReturner, optimizationRequest, runRequest, returner, status },
     package: { individually: true },
     custom: {
         esbuild: {
@@ -44,8 +52,85 @@ const serverlessConfiguration: AWS = {
     },
     resources: {
         Resources: {
-            'foppa-logs': {
-                Type: 'AWS::S3::Bucket'
+            LogBucket: {
+                Type: 'AWS::S3::Bucket',
+                Properties: {
+                    BucketName: 'foppa-logs'
+                }
+            },
+            FunctionExecutionCounter: {
+                Type: 'AWS::DynamoDB::Table',
+                Properties: {
+                    TableName: 'FunctionExecutionCounter',
+                    AttributeDefinitions: [
+                        { AttributeName: 'username', AttributeType: 'S' },
+                        { AttributeName: 'functionId', AttributeType: 'S' },
+                        // { AttributeName: 'executionCounter', AttributeType: 'N' },
+                    ],
+                    KeySchema: [
+                        { AttributeName: 'username', KeyType: 'HASH' },
+                        { AttributeName: 'functionId', KeyType: 'RANGE' },
+                    ],
+                    ProvisionedThroughput: {
+                        ReadCapacityUnits: 5,
+                        WriteCapacityUnits: 5
+                    },
+                },
+            },
+            regionExecutionCounter: {
+                Type: 'AWS::DynamoDB::Table',
+                Properties: {
+                    TableName: 'RegionExecutionCounter',
+                    AttributeDefinitions: [
+                        { AttributeName: 'uFunctionId', AttributeType: 'S' },
+                        { AttributeName: 'pregion', AttributeType: 'S' },
+                        // { AttributeName: 'executionCounter', AttributeType: 'N' },
+                    ],
+                    KeySchema: [
+                        { AttributeName: 'uFunctionId', KeyType: 'HASH' },
+                        { AttributeName: 'pregion', KeyType: 'RANGE' },
+                    ],
+                    ProvisionedThroughput: {
+                        ReadCapacityUnits: 5,
+                        WriteCapacityUnits: 5
+                    },
+                },
+            },
+            RegionRunnerURL: {
+                Type: 'AWS::DynamoDB::Table',
+                Properties: {
+                    TableName: 'RegionRunnerURL',
+                    AttributeDefinitions: [
+                        { AttributeName: 'username', AttributeType: 'S' },
+                        { AttributeName: 'pregion', AttributeType: 'S' },
+                        // { AttributeName: 'functionName', AttributeType: 'S' },
+                        // { AttributeName: 'url', AttributeType: 'S' },
+                    ],
+                    KeySchema: [
+                        { AttributeName: 'username', KeyType: 'HASH' },
+                        { AttributeName: 'pregion', KeyType: 'RANGE' },
+                    ],
+                    ProvisionedThroughput: {
+                        ReadCapacityUnits: 5,
+                        WriteCapacityUnits: 5
+                    },
+                },
+            },
+            UserManager: {
+                Type: 'AWS::DynamoDB::Table',
+                Properties: {
+                    TableName: 'UserManager',
+                    AttributeDefinitions: [
+                        { AttributeName: 'username', AttributeType: 'S' },
+                    ],
+                    KeySchema: [
+                        { AttributeName: 'username', KeyType: 'HASH' },
+                    ],
+                    ProvisionedThroughput: {
+                        ReadCapacityUnits: 5,
+                        WriteCapacityUnits: 5
+                    },
+                },
             }
         }
     }

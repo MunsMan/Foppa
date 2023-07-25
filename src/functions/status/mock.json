@@ -1,0 +1,10 @@
+{
+    "pathParameters": {
+        "username": "test",
+        "functionId": "test123"
+    },
+    "headers": {
+        "Content-Type": "application/json"
+    },
+    "body": "{\"size\":32}"
+}

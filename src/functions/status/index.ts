@@ -1,18 +1,16 @@
 import { handlerPath } from '@libs/handler-resolver';
 
-
 export default {
     handler: `${handlerPath(__dirname)}/handler.main`,
     events: [
         {
             httpApi: {
-                method: 'post',
-                path: '/create/{username}',
+                method: 'get',
+                path: '/status/{username}/{functionId}/{executionId}',
             },
         },
     ],
     environment:
     {
-        deploymentId: '${sls:instanceId}'
     }
 };

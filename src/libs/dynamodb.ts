@@ -3,7 +3,7 @@ import { marshall, unmarshall } from "@aws-sdk/util-dynamodb"
 import type { GetItemCommandInput, PutItemCommandInput } from "@aws-sdk/client-dynamodb";
 import variables from "variables";
 
-type DBTables = 'FunctionExecutionCounter' | 'FunctionUrl' | 'RegionRunnerURL'
+type DBTables = 'FunctionExecutionCounter' | 'FunctionUrl' | 'RegionRunnerURL' | 'RegionExecutionCounter' | 'UserManager'
 type QueryParams = { [key in string]: string | number }
 
 const db = new DynamoDBClient({ region: variables.REGION });
@@ -30,11 +30,39 @@ export const putValue = async (table: DBTables, item: QueryParams) => {
     return response
 }
 
-export const incrValue = async (table: DBTables, item: QueryParams, key: string) => {
+
+type ItemQueryParams<T extends DBTables> =
+    T extends 'RegionExecutionCounter' ? { uFunctionId: string, pregion: string } :
+    T extends 'FunctionExecutionCounter' ? { username: string, functionId: string } :
+    T extends 'UserManager' ? { username: string } :
+    never;
+
+type ValueKey<T extends DBTables> =
+    T extends 'RegionExecutionCounter' ? 'executionCounter' :
+    T extends 'FunctionExecutionCounter' ? 'executionCounter' :
+    T extends 'UserManager' ? 'functionCounter' :
+    never;
+
+export const incrValue = async<T extends DBTables>(table: T, item: ItemQueryParams<T>, key: ValueKey<T>) => {
     const input: UpdateItemCommandInput = {
         TableName: table,
         Key: marshall(item),
         UpdateExpression: `SET ${key} = if_not_exists(${key}, :initial) + :num`,
+        ExpressionAttributeValues: marshall({
+            ':num': 1,
+            ':initial': 0
+        }),
+        ReturnValues: "ALL_NEW",
+    }
+    const response = await db.send(new UpdateItemCommand(input))
+    return unmarshall(response.Attributes)[key]
+}
+
+export const decrValue = async<T extends DBTables>(table: T, item: ItemQueryParams<T>, key: ValueKey<T>) => {
+    const input: UpdateItemCommandInput = {
+        TableName: table,
+        Key: marshall(item),
+        UpdateExpression: `SET ${key} = if_not_exists(${key}, :initial) - :num`,
         ExpressionAttributeValues: marshall({
             ':num': 1,
             ':initial': 0

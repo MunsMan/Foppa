@@ -1,7 +1,6 @@
 {
     "extends": "./tsconfig.paths.json",
     "compilerOptions": {
-        "rootDir": "src",
         "lib": [
             "ESNext"
         ],
@@ -10,12 +9,12 @@
         "noUnusedParameters": true,
         "removeComments": true,
         "sourceMap": true,
-        "target": "ES2020",
-        "outDir": "lib"
+        "target": "ES2020"
     },
     "include": [
         "src/**/*.ts",
-        "serverless.ts"
+        "serverless.ts",
+        "types.d.ts"
     ],
     "exclude": [
         "node_modules/**/*",
@@ -28,8 +27,6 @@
         "require": [
             "tsconfig-paths/register"
         ],
-        "compilerOptions": {
-            "rootDir": "."
-        }
+        "files": true
     }
 }
