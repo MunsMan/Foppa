@@ -72,12 +72,12 @@ const serverlessConfiguration: AWS = {
                         { AttributeName: 'functionId', KeyType: 'RANGE' },
                     ],
                     ProvisionedThroughput: {
-                        ReadCapacityUnits: 5,
-                        WriteCapacityUnits: 5
+                        ReadCapacityUnits: 1,
+                        WriteCapacityUnits: 1
                     },
                 },
             },
-            regionExecutionCounter: {
+            RegionExecutionCounter: {
                 Type: 'AWS::DynamoDB::Table',
                 Properties: {
                     TableName: 'RegionExecutionCounter',
@@ -91,8 +91,8 @@ const serverlessConfiguration: AWS = {
                         { AttributeName: 'pregion', KeyType: 'RANGE' },
                     ],
                     ProvisionedThroughput: {
-                        ReadCapacityUnits: 5,
-                        WriteCapacityUnits: 5
+                        ReadCapacityUnits: 1,
+                        WriteCapacityUnits: 1
                     },
                 },
             },
@@ -101,18 +101,18 @@ const serverlessConfiguration: AWS = {
                 Properties: {
                     TableName: 'RegionRunnerURL',
                     AttributeDefinitions: [
-                        { AttributeName: 'username', AttributeType: 'S' },
+                        { AttributeName: 'uFunctionId', AttributeType: 'S' },
                         { AttributeName: 'pregion', AttributeType: 'S' },
                         // { AttributeName: 'functionName', AttributeType: 'S' },
                         // { AttributeName: 'url', AttributeType: 'S' },
                     ],
                     KeySchema: [
-                        { AttributeName: 'username', KeyType: 'HASH' },
+                        { AttributeName: 'uFunctionId', KeyType: 'HASH' },
                         { AttributeName: 'pregion', KeyType: 'RANGE' },
                     ],
                     ProvisionedThroughput: {
-                        ReadCapacityUnits: 5,
-                        WriteCapacityUnits: 5
+                        ReadCapacityUnits: 1,
+                        WriteCapacityUnits: 1
                     },
                 },
             },
@@ -127,8 +127,8 @@ const serverlessConfiguration: AWS = {
                         { AttributeName: 'username', KeyType: 'HASH' },
                     ],
                     ProvisionedThroughput: {
-                        ReadCapacityUnits: 5,
-                        WriteCapacityUnits: 5
+                        ReadCapacityUnits: 1,
+                        WriteCapacityUnits: 1
                     },
                 },
             }
