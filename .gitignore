@@ -12,3 +12,7 @@ coverage
 
 # build directory
 dist/
+
+
+# tmp directory for experiments
+tmp/
