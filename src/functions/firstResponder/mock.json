@@ -1,7 +1,7 @@
 {
     "pathParameters": {
-        "username": "test",
-        "functionId": "test123"
+        "username": "munsman",
+        "functionId": "1"
     },
     "headers": {
         "Content-Type": "application/json"

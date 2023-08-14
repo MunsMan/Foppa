@@ -47,7 +47,7 @@ interface FunctionExecutionCounterValue {
 }
 
 interface RegionRunnerUrlValue {
-    username: string;
+    uFunctionId: string;
     pregion: string;
     url: string;
     functionName: string;

@@ -1,15 +1,16 @@
 import { getValue, incrValue } from '@libs/dynamodb';
-import { toUFunctionId } from '@libs/parser';
+import { toPRegion, toUFunctionId } from '@libs/parser';
 import { appendLog } from '@libs/s3';
 import type { SNSEvent } from 'aws-lambda';
 import fetch from 'node-fetch'
 
 const runner = async (event: SNSEvent) => {
-    const { username, deployment, functionId, payload, executionId }: FunctionRunRequest = JSON.parse(event.Records[0].Sns.Message)
+    const { username, deployment, functionId, payload, executionId
+    }: FunctionRunRequest = JSON.parse(event.Records[0].Sns.Message)
     console.log(event.Records[0].Sns)
-    const pregion = `${deployment.provider}-${deployment.region}`;
+    const pregion = toPRegion(deployment.provider, deployment.region);
     const uFunctionId = toUFunctionId(username, functionId);
-    const dbResponse = await getValue<RegionRunnerUrlValue>('RegionRunnerURL', { username, pregion });
+    const dbResponse = await getValue<RegionRunnerUrlValue>('RegionRunnerURL', { uFunctionId, pregion });
     const currentRegionLoad = await incrValue('RegionExecutionCounter', { uFunctionId, pregion }, 'executionCounter')
     const response = await fetch(dbResponse.url, {
         method: 'POST',
@@ -25,6 +26,7 @@ const runner = async (event: SNSEvent) => {
             executionId
         })
     });
+    console.log(response)
     await appendLog(
         'foppa-logs',
         { username, functionId, executionId },

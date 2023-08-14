@@ -1,11 +1,39 @@
 import middy from "@middy/core"
-import middyJsonBodyParser from "@middy/http-json-body-parser"
-import { CreateFunctionCommand, DeleteFunctionCommand, LambdaClient, ResourceConflictException } from '@aws-sdk/client-lambda';
+import jsonBodyParser from "@middy/http-json-body-parser"
+import httpErrorHandler from '@middy/http-error-handler'
+import validator from '@middy/validator'
+import { transpileSchema } from '@middy/validator/transpile'
+import { CreateFunctionCommand, CreateFunctionUrlConfigCommand, DeleteFunctionCommand, GetFunctionUrlConfigCommand, LambdaClient, ResourceConflictException, ResourceNotFoundException } from '@aws-sdk/client-lambda';
+import { S3Client } from "@aws-sdk/client-s3"
+import { getZipFile } from "./s3"
 
-const FOPPA_BUCKET_NAME = process.env.FOPPA_BUCKET_NAME
+export const AWS_RUNNER = 'foppa-aws-runner'
+export const AWS_RETURNER = 'foppa-aws-returner'
 
-export const middyfy = (handler: any) => {
-    return middy(handler).use(middyJsonBodyParser())
+export const middyfy = (handler: any, schema?: any) => {
+    console.log({
+        type: 'object',
+        properties: {
+            body: schema
+        },
+        required: ['body']
+    })
+    const lambda = middy(handler);
+    lambda.use(jsonBodyParser())
+    if (schema) {
+        lambda.use(validator({
+            eventSchema: transpileSchema({
+                type: 'object',
+                properties: {
+                    body: schema
+                },
+                required: ['body']
+            }
+            )
+        }))
+    }
+    lambda.use(httpErrorHandler())
+    return lambda
 }
 
 
@@ -15,35 +43,68 @@ const deleteLambda = async (lambdaClient: LambdaClient, functionName: string) =>
     }))
 }
 
-const createLambda = async (lambdaClient: LambdaClient, functionName: string, role: string, username: string, bucket_name?: string) => {
-    await lambdaClient.send(new CreateFunctionCommand({
+const createLambda = async (lambdaClient: LambdaClient, functionName: string, role: string, handler: string, code: Buffer) => {
+    return await lambdaClient.send(new CreateFunctionCommand({
         FunctionName: functionName,
         Role: role,
         Code: {
-            S3Bucket: bucket_name ? bucket_name : FOPPA_BUCKET_NAME,
-            S3Key: `upload/${username}/${functionName}.zip`
+            ZipFile: code
         },
         Runtime: 'nodejs18.x',
-        Handler: 'test.handler',
+        Handler: handler,
         PackageType: 'Zip'
     }))
 }
 
-export const uploadLambda = async (lambdaClient: LambdaClient, functionName: string, role: string, username: string) => {
+export const uploadLambda = async (
+    lambdaClient: LambdaClient,
+    functionName: string,
+    role: string,
+    handler: string,
+    code: Buffer
+) => {
     try {
-        await createLambda(lambdaClient, functionName, role, username);
+        return await createLambda(lambdaClient, functionName, role, handler, code);
     } catch (error) {
+        console.error('[ERROR] - createLambda: ' + error)
         if (error instanceof ResourceConflictException) {
-            await deleteLambda(lambdaClient, username);
-            await createLambda(lambdaClient, functionName, role, username)
+            await deleteLambda(lambdaClient, functionName);
+            return await createLambda(lambdaClient, functionName, role, handler, code)
         }
+        return error
     }
 }
 
-export const uploadLambdaWrapper = async (lambdaClient: LambdaClient, role: string) => {
+export const uploadLambdaWrapper = async (lambdaClient: LambdaClient, role: string, bucket: string) => {
+    const handler = 'handler.main'
     const username = 'foppa'
+    const s3Client = new S3Client({ region: 'us-east-1' })
+    const code_runner = await getZipFile(s3Client, bucket, `upload/${username}/${AWS_RUNNER}.zip`)
+    const code_returner = await getZipFile(s3Client, bucket, `upload/${username}/${AWS_RETURNER}.zip`)
     return Promise.all([
-        uploadLambda(lambdaClient, 'foppa-aws-runner', role, username),
-        uploadLambda(lambdaClient, 'foppa-aws-returner', role, username)
+        uploadLambda(lambdaClient, AWS_RUNNER, role, handler, code_runner),
+        uploadLambda(lambdaClient, AWS_RETURNER, role, handler, code_returner)
     ])
+}
+
+const createLambdaUrl = async (lambdaClient: LambdaClient, functionName: string) => {
+    return lambdaClient.send(new CreateFunctionUrlConfigCommand({
+        FunctionName: functionName,
+        AuthType: 'NONE'
+    }))
+}
+
+export const getLambdaUrl = async (lambdaClient: LambdaClient, functionName: string) => {
+    try {
+
+        const response = await lambdaClient.send(new GetFunctionUrlConfigCommand({
+            FunctionName: functionName
+        }))
+        return response.FunctionUrl
+
+    } catch (error) {
+        if (error instanceof ResourceNotFoundException) {
+            return (await createLambdaUrl(lambdaClient, functionName)).FunctionUrl
+        }
+    }
 }
