@@ -1,4 +1,5 @@
 import { handlerPath } from '@libs/handler-resolver';
+import variables from 'variables';
 
 
 export default {
@@ -13,6 +14,7 @@ export default {
     ],
     environment:
     {
-        deploymentId: '${sls:instanceId}'
+        deploymentId: '${sls:instanceId}',
+        CODE_BUCKET: variables.FOPPA_BUCKET_NAME
     }
 };

@@ -1,7 +1,7 @@
 export default {
     type: 'object',
     properties: {
-        zip_file: { type: 'Uint8Array' },
+        zip_file: { type: 'string' },
         code: {
             type: 'object',
             properties: {
@@ -12,12 +12,13 @@ export default {
         role: { type: 'string' },
         runtime: { type: 'string' },
         functionName: { type: 'string' },
-        region: { type: 'string' }
+        region: { type: 'string' },
+        handler: { type: 'string' }
     },
     required: [
         'functionName',
         'role',
-        'runtime'
-        'region'
+        'runtime',
+        'region',
     ]
 } as const;
