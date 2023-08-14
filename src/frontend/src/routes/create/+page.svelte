@@ -7,12 +7,14 @@
 	let runtime: string;
 	let region: string;
 	let role: string;
+	let handler: string;
 
 	let disabled_button: boolean;
 
 	let valid_runtime = false;
 	let valid_region = false;
 	let valid_role = false;
+	let valid_handler = false;
 	let valid_functionName = false;
 
 	const valid_code = (code: FileList | undefined) => {
@@ -24,12 +26,60 @@
 		}
 		return true;
 	};
-	const onUpload = () => {
+
+	const readFile = async (file: File | null) => {
+		return new Promise((resolve, rejects) => {
+			if (!file) {
+				return resolve('empty');
+			}
+			const reader = new FileReader();
+			reader.onload = (data: ProgressEvent<FileReader>) => {
+				if (!data) {
+					return rejects();
+				}
+				if (!data.target) {
+					return rejects();
+				}
+				resolve(data.target.result);
+			};
+			reader.onerror = (error) => {
+				rejects(error);
+			};
+			reader.readAsDataURL(file);
+		});
+	};
+	const onUpload = async () => {
 		console.log('Upload');
+		const file = await readFile(code.item(0));
+		console.log(file);
+		const response = await fetch(
+			'https://hbx3q3qnp8.execute-api.us-east-1.amazonaws.com/create/test',
+			{
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				mode: 'no-cors',
+				cache: 'no-cache',
+				body: JSON.stringify({
+					region,
+					runtime,
+					role,
+					handler,
+					zip_file: file,
+					username: 'test'
+				})
+			}
+		);
+		console.log(response);
 	};
 
 	$: {
-		disabled_button = !(valid_runtime && valid_role && valid_region && valid_code(code));
+		disabled_button = !(
+			valid_handler &&
+			valid_runtime &&
+			valid_role &&
+			valid_region &&
+			valid_code(code)
+		);
 	}
 </script>
 
@@ -44,6 +94,7 @@
 	/>
 	<InputText allowed={runtimes} label="Runtime" bind:text={runtime} bind:valid={valid_runtime} />
 	<InputText allowed={regions} label="Region" bind:text={region} bind:valid={valid_region} />
+	<InputText label="Handler" bind:text={handler} bind:valid={valid_handler} />
 	<InputText label="Role" bind:text={role} bind:valid={valid_role} />
 	<div class="row">
 		<div class="container">

@@ -23,7 +23,7 @@ if (process.argv.length === 3) {
     uploadCodeS3(s3Client, functionName, file, bucket, username).then(
         (response) => {
             console.log(response);
-            uploadLambda(lambdaClient, functionName, role, username);
+            uploadLambda(lambdaClient, functionName, role, username, 'handler.main');
         })
     console.log('lambda is uploaded!')
 } else {
