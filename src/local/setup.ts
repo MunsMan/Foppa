@@ -1,5 +1,5 @@
 import { S3Client } from '@aws-sdk/client-s3'
-import { uploadCodeS3 } from '@libs/s3'
+import { localS3Upload } from '@libs/s3'
 import { exec } from 'child_process'
 import { fromIni } from '@aws-sdk/credential-provider-ini';
 import { createSpinner } from 'nanospinner';
@@ -39,8 +39,8 @@ const main = async () => {
 
     uploadSpinner.start();
     Promise.all([
-        uploadCodeS3(s3, 'foppa-aws-runner', '.serverless/awsRunner.zip', bucket, username),
-        uploadCodeS3(s3, 'foppa-aws-returner', '.serverless/awsReturner.zip', bucket, username)
+        localS3Upload(s3, 'foppa-aws-runner', 'dist/foppa-aws-runner.zip', bucket, username),
+        localS3Upload(s3, 'foppa-aws-returner', 'dist/foppa-aws-returner.zip', bucket, username)
     ])
         .then(() => { uploadSpinner.success() })
         .catch((error) => { uploadSpinner.error({ text: error }) })

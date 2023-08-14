@@ -49,6 +49,14 @@ const getFile = async (bucket: Bucket, key: string): Promise<string | undefined>
     }
 }
 
+export const getZipFile = async (s3Client: S3Client, bucket: string, key: string) => {
+    const response = await s3Client.send(new GetObjectCommand({
+        Bucket: bucket,
+        Key: key
+    }))
+    return Buffer.from(await response.Body.transformToByteArray())
+}
+
 export const putLog = async (bucket: Bucket, logId: LogIdentifier, log: Log) => {
     const { username, functionId, executionId } = logId
     const key = `${username}/${functionId}/${executionId}.json`
@@ -66,11 +74,19 @@ const putFile = async (bucket: Bucket, key: string, file: string) => {
 }
 
 
-export const uploadCodeS3 = async (s3Client: S3Client, functionName: string, code: string, bucket: string, username: string) => {
-    const file = path.resolve(code);
-    const body = fs.readFileSync(file)
+export const localS3Upload = async (s3Client: S3Client, functionName: string, filepath: string, bucket: string, username: string) => {
+    const file = path.resolve(filepath);
+    const code = fs.readFileSync(file)
+    return await uploadCodeS3(s3Client, functionName, code, bucket, username)
+
+}
+
+export const uploadCodeS3 = async (s3Client: S3Client, functionName: string, code: Buffer, bucket: string, username: string) => {
+    console.log(`[DEBUG] - [uploadCodeS3] - functionName:${functionName}`)
+    console.log(`[DEBUG] - [uploadCodeS3] - bucket:${bucket}`)
+    console.log(`[DEBUG] - [uploadCodeS3] - username:${username}`)
     const response = await s3Client.send(new PutObjectCommand({
-        Body: body,
+        Body: code,
         Key: `upload/${username}/${functionName}.zip`,
         Bucket: bucket
     }));
