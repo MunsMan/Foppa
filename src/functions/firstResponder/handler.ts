@@ -1,20 +1,21 @@
 import type { APIGatewayProxyEvent } from '@libs/api-gateway';
 import { formatJSONResponse } from '@libs/api-gateway';
-import { getValue, incrValue } from '@libs/dynamodb';
+import DynamoDB from '@libs/dynamodb';
 import { sendMessage } from '@libs/sns';
 
 const TOPIC = process.env.TOPIC
 
 const firstResponder: APIGatewayProxyEvent = async (event) => {
     const executionStart = Date.now();
+    const db: DB = new DynamoDB()
     const { username, functionId } = event.pathParameters
 
-    const entry = await getValue<FunctionExecutionCounterValue>('FunctionExecutionCounter', { username, functionId })
+    const entry = await db.getValue('FunctionExecutionCounter', { username, functionId })
     if (entry.executionCounter) {
-        const executionId = await incrValue('FunctionExecutionCounter', { username, functionId }, 'executionCounter')
+        const executionId = await db.incrValue('FunctionExecutionCounter', { username, functionId }, 'executionCounter')
         const executionEnd = Date.now();
         const message: OptimizationRequest = {
-            username, functionId, executionId, payload: event.body, logs: {
+            username, functionId, executionId: executionId.toString(), payload: event.body, logs: {
                 executionStart, executionEnd, body: event.body ? true : false
             }
         }
