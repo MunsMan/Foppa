@@ -10,26 +10,24 @@ interface GeneralRequest {
 }
 
 interface OptimizationRequestLog extends ApplicationLog {
-    body: boolean,
+    body: boolean;
 }
 
-
-interface FunctionRequestLog extends ApplicationLog {
-}
+interface FunctionRequestLog extends ApplicationLog {}
 
 interface ApplicationLog extends Log {
     executionStart: number;
     executionEnd: number;
 }
 
-type CloudProvider = 'aws'
+type CloudProvider = 'aws';
 
 interface FunctionRunRequest extends GeneralRequest {
     deployment: {
         provider: CloudProvider;
         region: string;
-    },
-    logs: FunctionRequestLog
+    };
+    logs: FunctionRequestLog;
 }
 
 interface LogIdentifier {
@@ -38,7 +36,7 @@ interface LogIdentifier {
     executionId: string;
 }
 
-type Log = { [event in string]: Log | string | number | boolean }
+type Log = { [event in string]: Log | string | number | boolean };
 
 interface FunctionExecutionCounterValue {
     username: string;
@@ -52,7 +50,3 @@ interface RegionRunnerUrlValue {
     url: string;
     functionName: string;
 }
-
-import { regions } from '@consts/aws'
-
-type Regions = typeof regions[number]
