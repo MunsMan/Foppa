@@ -52,3 +52,7 @@ interface RegionRunnerUrlValue {
     url: string;
     functionName: string;
 }
+
+import { regions } from '@consts/aws'
+
+type Regions = typeof regions[number]
