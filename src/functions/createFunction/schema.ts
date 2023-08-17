@@ -1,3 +1,4 @@
+import { regions } from '@consts/aws';
 export default {
     type: 'object',
     properties: {
@@ -6,19 +7,16 @@ export default {
             type: 'object',
             properties: {
                 bucket: { type: 'string' },
-                key: { type: 'string' }
-            }
+                key: { type: 'string' },
+            },
         },
         role: { type: 'string' },
         runtime: { type: 'string' },
         functionName: { type: 'string' },
-        region: { type: 'string' },
-        handler: { type: 'string' }
+        region: {
+            enum: [...regions],
+        },
+        handler: { type: 'string' },
     },
-    required: [
-        'functionName',
-        'role',
-        'runtime',
-        'region',
-    ]
+    required: ['functionName', 'role', 'runtime', 'region'],
 } as const;
