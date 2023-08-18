@@ -63,7 +63,7 @@ const getFile = async (bucket: Bucket, key: string): Promise<string | undefined>
     }
 };
 
-export const getZipFile = async (s3Client: S3Client, bucket: string, key: string) => {
+export const getFileS3 = async (s3Client: S3Client, bucket: string, key: string) => {
     const response = await s3Client.send(
         new GetObjectCommand({
             Bucket: bucket,
