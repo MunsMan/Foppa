@@ -94,11 +94,12 @@ export const localS3Upload = async (
     functionName: string,
     filepath: string,
     bucket: string,
-    username: string
+    username: string,
+    type: string = 'zip'
 ) => {
     const file = path.resolve(filepath);
     const code = fs.readFileSync(file);
-    return await uploadCodeS3(s3Client, functionName, code, bucket, username);
+    return await uploadCodeS3(s3Client, functionName, code, bucket, username, type);
 };
 
 export const uploadCodeS3 = async (
@@ -106,7 +107,8 @@ export const uploadCodeS3 = async (
     functionName: string,
     code: Buffer,
     bucket: string,
-    username: string
+    username: string,
+    type: string = 'zip'
 ) => {
     console.log(`[DEBUG] - [uploadCodeS3] - functionName:${functionName}`);
     console.log(`[DEBUG] - [uploadCodeS3] - bucket:${bucket}`);
@@ -114,7 +116,7 @@ export const uploadCodeS3 = async (
     const response = await s3Client.send(
         new PutObjectCommand({
             Body: code,
-            Key: `upload/${username}/${functionName}.zip`,
+            Key: `upload/${username}/${functionName}.${type}`,
             Bucket: bucket,
         })
     );
