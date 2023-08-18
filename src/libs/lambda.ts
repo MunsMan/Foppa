@@ -7,6 +7,7 @@ import {
     CreateFunctionCommand,
     CreateFunctionCommandOutput,
     CreateFunctionUrlConfigCommand,
+    DeleteFunctionCommand,
     GetFunctionCommand,
     GetFunctionCommandOutput,
     GetFunctionUrlConfigCommand,
@@ -16,7 +17,8 @@ import {
     ResourceNotFoundException,
 } from '@aws-sdk/client-lambda';
 import { S3Client } from '@aws-sdk/client-s3';
-import { getZipFile } from './s3';
+import { getFileS3 } from './s3';
+import { createHash } from 'crypto';
 
 export const AWS_RUNNER = 'foppa-aws-runner';
 export const AWS_RETURNER = 'foppa-aws-returner';
@@ -48,6 +50,12 @@ export const middyfy = (handler: any, schema?: any) => {
     return lambda;
 };
 
+const deleteLambda = async (lambdaClient: LambdaClient, functionName: string) =>
+    lambdaClient.send(
+        new DeleteFunctionCommand({
+            FunctionName: functionName,
+        })
+    );
 const getLambda = async (lambdaClient: LambdaClient, functionName: string) =>
     lambdaClient.send(
         new GetFunctionCommand({
@@ -60,7 +68,8 @@ const createLambda = async (
     functionName: string,
     role: string,
     handler: string,
-    code: Buffer
+    code: Buffer,
+    env: { [key in string]: string } = {}
 ) => {
     return await lambdaClient.send(
         new CreateFunctionCommand({
@@ -72,6 +81,7 @@ const createLambda = async (
             Runtime: 'nodejs18.x',
             Handler: handler,
             PackageType: 'Zip',
+            Environment: env,
         })
     );
 };
@@ -81,21 +91,36 @@ export const isCreateOutput = (
 ): response is CreateFunctionCommandOutput =>
     (response as CreateFunctionCommandOutput).FunctionArn !== undefined;
 
+const hashCode = (code: Buffer) => {
+    let hash = createHash('sha256').update(code).digest('base64url');
+    hash = hash.replace('_', '/');
+    hash += '=';
+    return hash;
+};
+
 export const uploadLambda = async (
     lambdaClient: LambdaClient,
     functionName: string,
     role: string,
     handler: string,
-    code: Buffer
+    code: Buffer,
+    env: { [key in string]: string } = {}
 ) => {
     const promise = new Promise<CreateFunctionCommandOutput | GetFunctionCommandOutput>(
         async (resolve, rejects) => {
             try {
-                resolve(await createLambda(lambdaClient, functionName, role, handler, code));
+                resolve(await createLambda(lambdaClient, functionName, role, handler, code, env));
             } catch (error) {
                 console.error('[ERROR] - createLambda: ' + error);
                 if (error instanceof ResourceConflictException) {
-                    resolve(await getLambda(lambdaClient, functionName));
+                    const response = await getLambda(lambdaClient, functionName);
+                    if (response.Configuration.CodeSha256 !== hashCode(code)) {
+                        await deleteLambda(lambdaClient, functionName);
+                        resolve(
+                            await createLambda(lambdaClient, functionName, role, handler, code, env)
+                        );
+                    }
+                    resolve(response);
                 }
                 rejects(error);
             }
@@ -112,15 +137,29 @@ export const uploadLambdaWrapper = async (
     const handler = 'handler.main';
     const username = 'foppa';
     const s3Client = new S3Client({ region: 'us-east-1' });
-    const code_runner = await getZipFile(s3Client, bucket, `upload/${username}/${AWS_RUNNER}.zip`);
-    const code_returner = await getZipFile(
-        s3Client,
-        bucket,
-        `upload/${username}/${AWS_RETURNER}.zip`
-    );
+    const [code_runner, code_returner, env_runner, env_returner] = await Promise.all([
+        getFileS3(s3Client, bucket, `upload/${username}/${AWS_RUNNER}.zip`),
+        getFileS3(s3Client, bucket, `upload/${username}/${AWS_RETURNER}.zip`),
+        getFileS3(s3Client, bucket, `upload/${username}/${AWS_RUNNER}.json`),
+        getFileS3(s3Client, bucket, `upload/${username}/${AWS_RETURNER}.json`),
+    ]);
     return Promise.allSettled([
-        uploadLambda(lambdaClient, AWS_RUNNER, role, handler, code_runner),
-        uploadLambda(lambdaClient, AWS_RETURNER, role, handler, code_returner),
+        uploadLambda(
+            lambdaClient,
+            AWS_RUNNER,
+            role,
+            handler,
+            code_runner,
+            JSON.parse(env_runner.toString())
+        ),
+        uploadLambda(
+            lambdaClient,
+            AWS_RETURNER,
+            role,
+            handler,
+            code_returner,
+            JSON.parse(env_returner.toString())
+        ),
     ]);
 };
 
