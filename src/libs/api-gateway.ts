@@ -5,6 +5,8 @@ import {
     CreateIntegrationCommand,
     CreateRouteCommand,
     CreateStageCommand,
+    GetApiCommand,
+    GetApisCommand,
     ProtocolType,
 } from '@aws-sdk/client-apigatewayv2';
 import type {
@@ -59,10 +61,17 @@ class AwsApiGateway implements ApiGateway {
     };
 
     setupApiGateway = async (apiName: string, lambda?: string) => {
+        const [exists, apiId] = await this.apiExists(apiName);
+        if (exists) {
+            this.apiId = apiId;
+            return await this.getApiById();
+        }
         const api = await this.createApiGateway(apiName, 'HTTP', lambda);
         this.apiId = api.ApiId;
         return api;
     };
+
+    getApiById = async () => await this.apiClient.send(new GetApiCommand({ ApiId: this.apiId }));
 
     createApiGateway = async (
         name: string,
@@ -131,6 +140,15 @@ class AwsApiGateway implements ApiGateway {
         );
         console.log(response);
         return response;
+    };
+
+    apiExists = async (name: string): Promise<[false] | [true, string]> => {
+        const response = await this.apiClient.send(new GetApisCommand({}));
+        const api = (response.Items ?? []).find((item) => item.Name === name);
+        if (api) {
+            return [true, api.ApiId];
+        }
+        return [false];
     };
 }
 
