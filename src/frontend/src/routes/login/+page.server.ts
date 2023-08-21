@@ -1,6 +1,6 @@
 import { redirect, fail } from '@sveltejs/kit';
 import type { Actions } from './$types';
-import { createSessionId } from '$lib/auth';
+import { createSessionId, setSessionId } from '$lib/auth';
 
 const hash = (password: string) => {
     return password;
@@ -34,4 +34,6 @@ export const actions = {
         cookies.set('sessionId', sessionId);
         throw redirect(303, source);
     }
+		const sessionId = createSessionId(username);
+		setSessionId(cookies, sessionId);
 } satisfies Actions;
