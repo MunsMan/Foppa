@@ -1,4 +1,6 @@
 <script lang="ts">
+	import Button from '$lib/compontents/button/button.svelte';
+	import Input from '$lib/compontents/input/input.svelte';
 	import type { ActionData } from './$types';
 
 	export let form: ActionData;
@@ -22,18 +24,12 @@
 	{/if}
 	<form method="post">
 		<div class="row">
-			<label for="username">
-				Username
-				<input id="username" type="text" name="username" />
-			</label>
+			<Input id="username" />
 		</div>
 		<div class="row">
-			<label for="password">
-				Password
-				<input id="password" type="password" name="password" />
-			</label>
+			<Input type="password" id="password" />
 		</div>
-		<div class="row"><button type="submit" class="button">Log In</button></div>
+		<div class="row"><Button>Log In</Button></div>
 	</form>
 </div>
 
@@ -57,16 +53,5 @@
 		background-color: rgba(200, 10, 10, 0.5);
 		color: whitesmoke;
 		width: 50%;
-	}
-	.button {
-		background-color: blue; /* Green */
-		border: none;
-		border-radius: 5px;
-		color: white;
-		padding: 15px 32px;
-		text-align: center;
-		text-decoration: none;
-		display: inline-block;
-		font-size: 16px;
 	}
 </style>

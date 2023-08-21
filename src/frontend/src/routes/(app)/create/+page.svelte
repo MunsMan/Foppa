@@ -1,7 +1,6 @@
 <script lang="ts">
-	import InputText from '$lib/compontents/input/inputText.svelte';
+	import Input from '$lib/compontents/input/input.svelte';
 	import { runtimes, regions } from '$lib/aws/constants';
-	import { functionNameValidation } from '$lib/validation/functionName';
 
 	let code: FileList;
 	let runtime: string;
@@ -10,22 +9,6 @@
 	let handler: string;
 
 	let disabled_button: boolean;
-
-	let valid_runtime = false;
-	let valid_region = false;
-	let valid_role = false;
-	let valid_handler = false;
-	let valid_functionName = false;
-
-	const valid_code = (code: FileList | undefined) => {
-		if (!code) {
-			return false;
-		}
-		if (code.length !== 1) {
-			return false;
-		}
-		return true;
-	};
 
 	const readFile = async (file: File | null) => {
 		return new Promise((resolve, rejects) => {
@@ -71,31 +54,18 @@
 		);
 		console.log(response);
 	};
-
-	$: {
-		disabled_button = !(
-			valid_handler &&
-			valid_runtime &&
-			valid_role &&
-			valid_region &&
-			valid_code(code)
-		);
-	}
 </script>
 
 <div class="container">
 	<div>
 		<h1 style="text-align: center;">Upload a Function</h1>
 	</div>
-	<InputText
-		validate={functionNameValidation}
-		label="Function Name"
-		bind:valid={valid_functionName}
-	/>
-	<InputText allowed={runtimes} label="Runtime" bind:text={runtime} bind:valid={valid_runtime} />
-	<InputText allowed={regions} label="Region" bind:text={region} bind:valid={valid_region} />
-	<InputText label="Handler" bind:text={handler} bind:valid={valid_handler} />
-	<InputText label="Role" bind:text={role} bind:valid={valid_role} />
+	<form />
+	<Input label="Function Name" id="functionName" />
+	<Input id="runtime" options={runtimes} />
+	<Input id="region" options={regions} />
+	<Input id="handler" />
+	<Input id="role" />
 	<div class="row">
 		<div class="container">
 			<label for="lambda" class="file-selector">
