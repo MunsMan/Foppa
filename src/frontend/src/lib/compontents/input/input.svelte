@@ -4,21 +4,24 @@
 	export let options: string[] = [];
 	export let label: string = id[0].toUpperCase() + id.slice(1);
 	export let errorMessage = '';
+	export let defaultValue = '';
+	export let error = false;
 </script>
 
 <div class="container">
-	{#if errorMessage.length}
-		<div class="status">
-			<p style="color: {'red'}">{errorMessage}</p>
-		</div>
-	{/if}
-	<label for={id} style="text-align: center;">{label} </label>
+	<div class="status">
+		{#if error}
+			<p style="color: {'red'}">{errorMessage ?? 'Something is wrong here!'}</p>
+		{/if}
+	</div>
+	<label for={id} style="text-align: left;">{label} </label>
 	<input
 		class="input"
 		name={id}
 		style="border-bottom: 2px solid {errorMessage ? 'red' : 'blue'};"
 		{id}
 		{type}
+		value={defaultValue}
 		list={'options-' + label}
 	/>
 	{#if options}

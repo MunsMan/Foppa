@@ -36,6 +36,14 @@ export const actions = {
 				code.valid
 			)
 		) {
+			console.log('Invalid', 'validation', {
+				functionName,
+				runtime,
+				region,
+				handler,
+				role,
+				code
+			});
 			return {
 				status: 'validation',
 				state: {
