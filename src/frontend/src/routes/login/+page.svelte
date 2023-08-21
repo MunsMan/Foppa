@@ -24,7 +24,7 @@
 	{/if}
 	<form method="post">
 		<div class="row">
-			<Input id="username" />
+			<Input id="username" defaultValue={form?.username} />
 		</div>
 		<div class="row">
 			<Input type="password" id="password" />
