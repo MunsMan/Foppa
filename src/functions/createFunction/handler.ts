@@ -73,6 +73,7 @@ const createFunction: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async 
             username,
             functionId: functionId.toString(),
             executionCounter: 0,
+            functionName,
         }),
         await db.putValue('RegionExecutionCounter', {
             uFunctionId: toUFunctionId(username, functionId),

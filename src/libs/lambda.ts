@@ -24,13 +24,6 @@ export const AWS_RUNNER = 'foppa-aws-runner';
 export const AWS_RETURNER = 'foppa-aws-returner';
 
 export const middyfy = (handler: any, schema?: any) => {
-    console.log({
-        type: 'object',
-        properties: {
-            body: schema,
-        },
-        required: ['body'],
-    });
     const lambda = middy(handler);
     lambda.use(jsonBodyParser());
     if (schema) {
