@@ -4,6 +4,7 @@ interface FunctionExecutionCounter {
     username: string;
     functionId: string;
     executionCounter?: number;
+    functionName?: string;
 }
 
 interface RegionRunnerUrl {
