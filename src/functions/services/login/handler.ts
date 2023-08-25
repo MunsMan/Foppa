@@ -3,7 +3,7 @@ import { formatJSONResponse } from '@libs/api-gateway';
 import DynamoDB from '@libs/dynamodb';
 import { middyfy } from '@libs/lambda';
 import schema from './schema';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 
 const db = new DynamoDB();
 
