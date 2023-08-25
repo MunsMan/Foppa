@@ -2,7 +2,7 @@
 	export let name: string;
 </script>
 
-<div class="wrapper">
+<a class="wrapper" href={`/function/${name}`}>
 	<div>
 		{name}
 	</div>
@@ -12,7 +12,7 @@
 	<div>
 		{name}
 	</div>
-</div>
+</a>
 
 <style>
 	.wrapper {
@@ -23,5 +23,7 @@
 		justify-content: space-between;
 		padding: 5px;
 		margin: 5px;
+		text-decoration: none;
+		color: inherit;
 	}
 </style>
