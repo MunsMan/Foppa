@@ -11,6 +11,8 @@ import optimizationRequest from '@functions/logging/optimizationRequest';
 import runRequest from '@functions/logging/runRequest';
 import status from '@functions/status';
 import functionService from '@functions/services/function';
+import loginService from '@functions/services/login';
+import signInService from '@functions/services/signIn';
 
 const serverlessConfiguration: AWS = {
     service: 'foppa',
@@ -49,6 +51,8 @@ const serverlessConfiguration: AWS = {
         returner,
         status,
         functionService,
+        loginService,
+        signInService,
     },
     package: { individually: true },
     custom: {
