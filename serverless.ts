@@ -10,6 +10,7 @@ import awsReturner from '@functions/aws/awsReturner';
 import optimizationRequest from '@functions/logging/optimizationRequest';
 import runRequest from '@functions/logging/runRequest';
 import status from '@functions/status';
+import functionService from '@functions/services/function';
 
 const serverlessConfiguration: AWS = {
     service: 'foppa',
@@ -29,14 +30,26 @@ const serverlessConfiguration: AWS = {
             NODE_OPTIONS: '--enable-source-maps --stack-trace-limit=1000',
         },
         iam: {
-            role: "arn:aws:iam::807699729275:role/LabRole",
+            role: 'arn:aws:iam::807699729275:role/LabRole',
         },
         deploymentBucket: {
-            name: '${self:service}-deployment-${self:provider.stage}'
-        }
+            name: '${self:service}-deployment-${self:provider.stage}',
+        },
     },
     // import the function via paths
-    functions: { firstResponder, createFunction, scheduler, runner, awsRunner, awsReturner, optimizationRequest, runRequest, returner, status },
+    functions: {
+        firstResponder,
+        createFunction,
+        scheduler,
+        runner,
+        awsRunner,
+        awsReturner,
+        optimizationRequest,
+        runRequest,
+        returner,
+        status,
+        functionService,
+    },
     package: { individually: true },
     custom: {
         esbuild: {
@@ -55,8 +68,8 @@ const serverlessConfiguration: AWS = {
             LogBucket: {
                 Type: 'AWS::S3::Bucket',
                 Properties: {
-                    BucketName: 'foppa-logs'
-                }
+                    BucketName: 'foppa-logs',
+                },
             },
             FunctionExecutionCounter: {
                 Type: 'AWS::DynamoDB::Table',
@@ -73,7 +86,7 @@ const serverlessConfiguration: AWS = {
                     ],
                     ProvisionedThroughput: {
                         ReadCapacityUnits: 1,
-                        WriteCapacityUnits: 1
+                        WriteCapacityUnits: 1,
                     },
                 },
             },
@@ -92,7 +105,7 @@ const serverlessConfiguration: AWS = {
                     ],
                     ProvisionedThroughput: {
                         ReadCapacityUnits: 1,
-                        WriteCapacityUnits: 1
+                        WriteCapacityUnits: 1,
                     },
                 },
             },
@@ -112,7 +125,7 @@ const serverlessConfiguration: AWS = {
                     ],
                     ProvisionedThroughput: {
                         ReadCapacityUnits: 1,
-                        WriteCapacityUnits: 1
+                        WriteCapacityUnits: 1,
                     },
                 },
             },
@@ -120,20 +133,16 @@ const serverlessConfiguration: AWS = {
                 Type: 'AWS::DynamoDB::Table',
                 Properties: {
                     TableName: 'UserManager',
-                    AttributeDefinitions: [
-                        { AttributeName: 'username', AttributeType: 'S' },
-                    ],
-                    KeySchema: [
-                        { AttributeName: 'username', KeyType: 'HASH' },
-                    ],
+                    AttributeDefinitions: [{ AttributeName: 'username', AttributeType: 'S' }],
+                    KeySchema: [{ AttributeName: 'username', KeyType: 'HASH' }],
                     ProvisionedThroughput: {
                         ReadCapacityUnits: 1,
-                        WriteCapacityUnits: 1
+                        WriteCapacityUnits: 1,
                     },
                 },
-            }
-        }
-    }
+            },
+        },
+    },
 };
 
 module.exports = serverlessConfiguration;
