@@ -69,9 +69,9 @@ export const postService = async <T extends PostService>(
 };
 
 type GetServiceUrl<T extends GetService> = T extends 'function'
-    ? `function/${string}`
+    ? `function/${string}/${string}`
     : T extends 'functions'
-    ? 'function'
+    ? `function/${string}`
     : never;
 
 type GetServiceResponse<T extends GetService> = T extends 'function'
