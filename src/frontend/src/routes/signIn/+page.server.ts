@@ -1,19 +1,14 @@
 import { redirect, fail } from '@sveltejs/kit';
 import type { Actions } from './$types';
 import { createSessionId, setSessionId } from '$lib/auth';
-import { BACKEND_URL } from '$env/static/private';
+import { postService } from '$lib/backend';
 
-type ValidationStatus = 'created' | 'alreadyExists' | 'error' | 'notEqual';
+type ValidationStatus = 'created' | 'alreadyExists' | 'error';
 
 const createUser = async (username: string, password: string): Promise<ValidationStatus> => {
     try {
-        const response = await fetch(`${BACKEND_URL}/signIn`, {
-            method: 'POST',
-            body: JSON.stringify({ username, password }),
-            headers: { 'Content-Type': 'application/json' }
-        });
-        const data = await response.json();
-        return data.created ? 'created' : 'alreadyExists';
+        const data = await postService<'signIn'>('signIn', { username, password });
+        return data.status;
     } catch (error) {
         return 'error';
     }
