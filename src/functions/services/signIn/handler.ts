@@ -13,12 +13,12 @@ const signInService: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
     try {
         const user = await db.getValue('UserManager', { username });
         if (user.username === username) {
-            return formatJSONResponse({ created: false, message: 'User already exists!' });
+            return formatJSONResponse({ username, status: 'alreadyExists' });
         }
     } catch (error) {
         const hash = await bycrypt.hash(password, bycrypt.genSaltSync());
         await db.putValue('UserManager', { username, password: hash, functionCounter: 0 });
-        return formatJSONResponse({ created: true, message: 'User successfully created!' });
+        return formatJSONResponse({ username, status: 'created' });
     }
 };
 
