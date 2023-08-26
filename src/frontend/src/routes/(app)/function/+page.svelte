@@ -1,13 +1,13 @@
 <script lang="ts">
-	import type { PageData } from './$types';
+	import type { PageServerData } from './$types';
 	import ListItem from './listItem.svelte';
 
-	export let data: PageData;
+	export let data: PageServerData;
 </script>
 
 <div class="container">
-	{#each data.functions as { name }}
-		<ListItem {name} />
+	{#each data.functions as { functionName, functionId, executionCounter }}
+		<ListItem {functionName} {functionId} {executionCounter} />
 	{/each}
 </div>
 

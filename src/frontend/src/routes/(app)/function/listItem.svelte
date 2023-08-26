@@ -1,16 +1,18 @@
 <script lang="ts">
-	export let name: string;
+	export let functionName: string;
+	export let functionId: string;
+	export let executionCounter: string;
 </script>
 
-<a class="wrapper" href={`/function/${name}`}>
+<a class="wrapper" href={`/function/${functionId}`}>
 	<div>
-		{name}
+		{functionName}
 	</div>
 	<div>
-		{name}
+		{functionId}
 	</div>
 	<div>
-		{name}
+		{executionCounter}
 	</div>
 </a>
 
