@@ -40,7 +40,6 @@ class DynamoDB implements DB {
         const query = Object.keys(params)
             .map((key, index) => `${key} = :v${index + 1} `)
             .join(' AND ');
-        console.log(variables);
         const input: QueryCommandInput = {
             TableName: table,
             KeyConditionExpression: query,
