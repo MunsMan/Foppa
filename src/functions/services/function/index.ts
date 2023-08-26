@@ -6,13 +6,13 @@ export default {
         {
             httpApi: {
                 method: 'get',
-                path: '/backend/{username}/{functionId}',
+                path: '/function/{username}/{functionId}',
             },
         },
         {
             httpApi: {
                 method: 'get',
-                path: '/backend/{username}',
+                path: '/function/{username}',
             },
         },
     ],
