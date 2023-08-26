@@ -1,8 +1,10 @@
 <script lang="ts">
+	import { page } from '$app/stores';
 	import Button from '$lib/compontents/button/button.svelte';
 	import Input from '$lib/compontents/input/input.svelte';
 	import type { ActionData } from './$types';
 
+	const redirect = $page.url.searchParams.get('redirect') ?? '/';
 	export let form: ActionData;
 </script>
 
@@ -31,6 +33,9 @@
 		</div>
 		<div class="row"><Button>Log In</Button></div>
 	</form>
+	<div class="row text">
+		<p>or<br />Do you need an <a href={`/signIn?redirect=${redirect}`}>Account</a>?</p>
+	</div>
 </div>
 
 <style>
@@ -39,7 +44,7 @@
 		flex-direction: column;
 	}
 	.row {
-		margin: 2vh;
+		margin: 1vh;
 		display: flex;
 		flex-direction: row;
 		justify-content: space-around;
