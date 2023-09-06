@@ -10,14 +10,4 @@ export const load: PageServerLoad = async ({ cookies, request }) => {
     const data = await getService<'functions'>(`function/${session.username}`);
     console.log(data);
     return data;
-    return {
-        functions: [
-            { name: 'test123' },
-            { name: 'test123' },
-            { name: 'test123' },
-            { name: 'test123' },
-            { name: 'test123' },
-            { name: 'test123' }
-        ]
-    };
 };

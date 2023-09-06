@@ -16,7 +16,7 @@ interface SignInResponse {
     username: string;
 }
 
-interface FunctionResponse {
+export interface FunctionResponse {
     functionId: string;
     regions: {
         region: Region;
