@@ -1,20 +1,10 @@
-<div class="container">
-	<h1>Your Functions</h1>
-	<div class="container">
-		<div class="item">
-			<slot />
-		</div>
-	</div>
-</div>
+<script>
+	import Column from '$lib/compontents/column/column.svelte';
+</script>
 
-<style>
-	.container {
-		display: flex;
-		flex-direction: column;
-		justify-content: space-around;
-	}
-	.item {
-		display: flex;
-		flex-direction: row;
-	}
-</style>
+<Column>
+	<h1><a href="/function">Your Functions</a></h1>
+	<Column>
+		<slot />
+	</Column>
+</Column>
