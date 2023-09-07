@@ -5,7 +5,8 @@
     "main": "serverless.ts",
     "scripts": {
         "test": "jest",
-        "upload": "ts-node src/local/upload.ts"
+        "upload": "ts-node src/local/upload.ts",
+        "setup": "ts-node src/local/setup.ts"
     },
     "engines": {
         "node": ">=18"
