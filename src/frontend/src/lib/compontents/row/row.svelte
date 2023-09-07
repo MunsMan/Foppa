@@ -1,4 +1,8 @@
-<div class="row">
+<script lang="ts">
+	export let style = '';
+</script>
+
+<div {style} class="row">
 	<slot />
 </div>
 
