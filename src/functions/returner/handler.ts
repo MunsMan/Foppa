@@ -6,21 +6,33 @@ import { appendLog } from '@libs/s3';
 import { toUFunctionId } from '@libs/parser';
 
 const returner: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (event) => {
+    const executionStart = Date.now();
     const { username, functionId } = event.pathParameters;
-    const { executionId, pregion, result, executionEnd, executionStart } = event.body;
+    const {
+        executionId,
+        pregion,
+        result,
+        executionEnd: awsExecutionEnd,
+        executionStart: awsExecutionStart,
+        userFunctionLogs,
+    } = event.body;
     const db: DB = new DynamoDB();
     const uFunctionId = toUFunctionId(username, functionId);
+
+    await db.decrValue('RegionExecutionCounter', { uFunctionId, pregion }, 'executionCounter');
     const log = {
-        response: { result, type: 'json' },
-        executionStart,
-        executionEnd,
+        response: { result, type: 'json', userFunctionLogs },
+        awsWrapper: {
+            awsExecutionStart,
+            awsExecutionEnd,
+        },
+        logs: {
+            executionStart,
+            executionEnd: Date.now(),
+        },
     };
-    const tasks = Promise.all([
-        db.decrValue('RegionExecutionCounter', { uFunctionId, pregion }, 'executionCounter'),
-        appendLog('foppa-logs', { username, functionId, executionId }, 'returner', log),
-    ]);
-    await tasks;
+    await appendLog('foppa-logs', { username, functionId, executionId }, 'returner', log);
     return formatJSONResponse({});
 };
 
-export const main = middyfy(returner);
+export const main = middyfy(returner, schema);
