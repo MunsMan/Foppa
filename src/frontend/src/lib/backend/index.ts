@@ -4,7 +4,7 @@ import type { regions } from '$lib/aws/constants';
 type Provider = 'aws';
 type Region = (typeof regions)[number];
 
-type PostService = 'login' | 'signIn';
+type PostService = 'login' | 'signIn' | 'create';
 type GetService = 'function' | 'functions';
 
 interface LoginResponse {
@@ -36,22 +36,40 @@ interface FunctionsResponse {
 	}[];
 }
 
+interface CreateResponse {
+	message: string;
+	functionId: string;
+}
+
 type PostServiceUrl<T extends PostService> = T extends 'login'
 	? 'login'
 	: T extends 'signIn'
 	? 'signIn'
+	: T extends 'create'
+	? `create/${string}`
 	: never;
 
 type PostServiceBody<T extends PostService> = T extends 'login'
 	? { username: string; password: string }
 	: T extends 'signIn'
 	? { username: string; password: string }
+	: T extends 'create'
+	? {
+			region: string;
+			runtime: string;
+			role: string;
+			handler: string;
+			zip_file: string;
+			functionName: string;
+	  }
 	: never;
 
 type PostServiceResponse<T extends PostService> = T extends 'login'
 	? LoginResponse
 	: T extends 'signIn'
 	? SignInResponse
+	: T extends 'create'
+	? CreateResponse
 	: never;
 
 const headers = { 'Content-Type': 'application/json' };

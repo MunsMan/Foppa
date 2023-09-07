@@ -3,38 +3,16 @@
 	import { runtimes, regions } from '$lib/aws/constants';
 	import Button from '$lib/compontents/button/button.svelte';
 	import type { ActionData } from './$types';
+	import { enhance } from '$app/forms';
 
 	export let form: ActionData;
-
-	let code: FileList;
-	const readFile = async (file: File | null) => {
-		return new Promise((resolve, rejects) => {
-			if (!file) {
-				return resolve('empty');
-			}
-			const reader = new FileReader();
-			reader.onload = (data: ProgressEvent<FileReader>) => {
-				if (!data) {
-					return rejects();
-				}
-				if (!data.target) {
-					return rejects();
-				}
-				resolve(data.target.result);
-			};
-			reader.onerror = (error) => {
-				rejects(error);
-			};
-			reader.readAsDataURL(file);
-		});
-	};
 </script>
 
 <div class="container">
 	<div>
 		<h1 style="text-align: center;">Upload a Function</h1>
 	</div>
-	<form method="post">
+	<form method="post" use:enhance enctype="multipart/form-data">
 		<Input
 			label="Function Name"
 			id="functionName"
@@ -70,7 +48,7 @@
 		/>
 		<div class="row">
 			<div class="container">
-				{#if !form?.state?.code.valid}
+				{#if form?.state && !form?.state?.code.valid}
 					<div class="status">
 						<p style="color: {'red'}">{form?.state?.code.message}</p>
 					</div>
@@ -79,7 +57,6 @@
 					Upload Code Package
 					<input
 						accept=".zip"
-						bind:files={code}
 						id="lambda"
 						name="lambda"
 						type="file"
@@ -90,9 +67,15 @@
 			</div>
 		</div>
 		<div class="row">
-			<Button>Deploy Lambda</Button>
+			<Button type="submit">Deploy Lambda</Button>
 		</div>
 	</form>
+	{#if form?.status === 'success'}
+		<p style="color: green">Function Successfully Created!<br />FunctionId: {form.functionId}</p>
+	{/if}
+	{#if form?.status === 'error'}
+		<p style="color: red">{form.message}</p>
+	{/if}
 </div>
 
 <style>

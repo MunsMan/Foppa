@@ -1,7 +1,7 @@
 <script lang="ts">
 	export let type: 'text' | 'password' = 'text';
 	export let id: string;
-	export let options: string[] = [];
+	export let options: readonly string[] = [];
 	export let label: string = id[0].toUpperCase() + id.slice(1);
 	export let errorMessage = '';
 	export let defaultValue = '';

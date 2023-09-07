@@ -1,5 +1,5 @@
 <script lang="ts">
-	export let type: 'button' | 'submit' | undefined = 'button';
+	export let type: 'button' | 'submit' | undefined = undefined;
 </script>
 
 <button class="button" {type}><slot /></button>

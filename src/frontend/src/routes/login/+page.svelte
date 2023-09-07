@@ -31,7 +31,7 @@
 		<div class="row">
 			<Input type="password" id="password" />
 		</div>
-		<div class="row"><Button>Log In</Button></div>
+		<div class="row"><Button type="submit">Log In</Button></div>
 	</form>
 	<div class="row text">
 		<p>or<br />Do you need an <a href={`/signIn?redirect=${redirect}`}>Account</a>?</p>

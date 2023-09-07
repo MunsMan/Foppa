@@ -42,7 +42,7 @@
 		<div class="row">
 			<Input type="password" id="password-2" label="Confirmation" />
 		</div>
-		<div class="row"><Button>Sign In</Button></div>
+		<div class="row"><Button type="submit">Sign In</Button></div>
 	</form>
 	<div class="row text">
 		<p>or<br />Do you have an <a href={`/login?redirect=${redirect}`}>Account</a>?</p>
