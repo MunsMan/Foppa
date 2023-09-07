@@ -11,6 +11,12 @@ interface GeneralRequest {
 
 interface OptimizationRequestLog extends ApplicationLog {
     body: boolean;
+    user?: {
+        requestId: string;
+        accoundId: string;
+        ip: string;
+        method: string;
+    };
 }
 
 interface FunctionRequestLog extends ApplicationLog {}
