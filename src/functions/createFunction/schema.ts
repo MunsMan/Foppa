@@ -13,10 +13,14 @@ export default {
         role: { type: 'string' },
         runtime: { type: 'string' },
         functionName: { type: 'string' },
-        region: {
-            enum: [...regions],
+        regions: {
+            type: 'array',
+            items: {
+                type: 'string',
+                enum: [...regions],
+            },
         },
         handler: { type: 'string' },
     },
-    required: ['functionName', 'role', 'runtime', 'region'],
+    required: ['functionName', 'role', 'runtime', 'regions'],
 } as const;
