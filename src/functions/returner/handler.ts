@@ -6,18 +6,19 @@ import { appendLog } from '@libs/s3';
 import { toUFunctionId } from '@libs/parser';
 
 const returner: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (event) => {
-    const { username, functionId } = event.pathParameters
+    const { username, functionId } = event.pathParameters;
     const { executionId, pregion, result, executionEnd, executionStart } = event.body;
-    const db: DB = new DynamoDB()
-    const uFunctionId = toUFunctionId(username, functionId)
+    const db: DB = new DynamoDB();
+    const uFunctionId = toUFunctionId(username, functionId);
     const log = {
         response: { result, type: 'json' },
         executionStart,
-        executionEnd
-    }
+        executionEnd,
+    };
     const tasks = Promise.all([
         db.decrValue('RegionExecutionCounter', { uFunctionId, pregion }, 'executionCounter'),
-        appendLog('foppa-logs', { username, functionId, executionId }, 'finished', log)])
+        appendLog('foppa-logs', { username, functionId, executionId }, 'returner', log),
+    ]);
     await tasks;
     return formatJSONResponse({});
 };

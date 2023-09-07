@@ -21,9 +21,9 @@ interface LogIdentifier {
 
 export const LogEventTypes = [
     'firstResponder',
-    'functionRunner',
-    'executionTrigger',
-    'finished',
+    'scheduler',
+    'runner',
+    'returner',
 ] as const;
 
 type LogEvents = (typeof LogEventTypes)[number];

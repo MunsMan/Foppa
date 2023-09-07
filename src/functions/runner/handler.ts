@@ -26,18 +26,12 @@ const runner = async (event: SNSEvent) => {
             pregion,
             executionId
         })
+    console.log(response);
+    await appendLog('foppa-logs', { username, functionId, executionId }, 'runner', {
+        url: dbResponse.url,
+        status: response.status,
+        currentRegionLoad,
     });
-    console.log(response)
-    await appendLog(
-        'foppa-logs',
-        { username, functionId, executionId },
-        'executionTrigger',
-        {
-            url: response.url,
-            status: response.status,
-            currentRegionLoad
-        }
-    )
     return event;
 };
 
