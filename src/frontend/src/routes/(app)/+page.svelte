@@ -1,12 +1,12 @@
-<script>
-	import Counter from './Counter.svelte';
+<script lang="ts">
+	import foppa from '$lib/images/foppa.png';
 	import welcome from '$lib/images/svelte-welcome.webp';
 	import welcome_fallback from '$lib/images/svelte-welcome.png';
 </script>
 
 <svelte:head>
 	<title>Home</title>
-	<meta name="description" content="Svelte demo app" />
+	<meta name="description" content="Foppa" />
 </svelte:head>
 
 <section>
@@ -17,15 +17,9 @@
 				<img src={welcome_fallback} alt="Welcome" />
 			</picture>
 		</span>
-
-		to your new<br />SvelteKit app
+		to
 	</h1>
-
-	<h2>
-		try editing <strong>src/routes/+page.svelte</strong>
-	</h2>
-
-	<Counter />
+	<img class="logo" alt="Logo" src={foppa} />
 </section>
 
 <style>
@@ -39,6 +33,10 @@
 
 	h1 {
 		width: 100%;
+	}
+
+	.logo {
+		width: 40%;
 	}
 
 	.welcome {

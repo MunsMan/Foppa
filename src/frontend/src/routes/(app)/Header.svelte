@@ -1,6 +1,6 @@
 <script>
 	import { page } from '$app/stores';
-	import logo from '$lib/images/foppa-1.png';
+	import logo from '$lib/images/foppa.png';
 	import github from '$lib/images/github.svg';
 </script>
 
@@ -19,11 +19,11 @@
 			<li aria-current={$page.url.pathname === '/' ? 'page' : undefined}>
 				<a href="/">Home</a>
 			</li>
+			<li aria-current={$page.url.pathname.startsWith('/function') ? 'page' : undefined}>
+				<a href="/function">Functions</a>
+			</li>
 			<li aria-current={$page.url.pathname === '/create' ? 'page' : undefined}>
 				<a href="/create">Create</a>
-			</li>
-			<li aria-current={$page.url.pathname.startsWith('/sverdle') ? 'page' : undefined}>
-				<a href="/overview">Overview</a>
 			</li>
 		</ul>
 		<svg viewBox="0 0 2 3" aria-hidden="true">
