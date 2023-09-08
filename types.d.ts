@@ -19,7 +19,16 @@ interface OptimizationRequestLog extends ApplicationLog {
     };
 }
 
-interface FunctionRequestLog extends ApplicationLog {}
+interface FunctionRequestLog extends ApplicationLog {
+    decisionLogs: {
+        regionExecutionCounter: number;
+        regionCost: number;
+        uFunctionId: string;
+        pregion: string;
+        functionName?: string;
+        url?: string;
+    }[];
+}
 
 interface ApplicationLog extends Log {
     executionStart: number;
@@ -42,7 +51,7 @@ interface LogIdentifier {
     executionId: string;
 }
 
-type Log = { [event in string]: Log | string | number | boolean };
+type Log = { [event in string]: Log | string | number | boolean | Log[] };
 
 interface FunctionExecutionCounterValue {
     username: string;
