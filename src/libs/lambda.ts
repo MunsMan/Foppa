@@ -25,8 +25,8 @@ export const AWS_RETURNER = 'foppa-aws-returner';
 
 export const middyfy = (handler: any, schema?: any) => {
     const lambda = middy(handler);
-    lambda.use(jsonBodyParser());
     if (schema) {
+        lambda.use(jsonBodyParser());
         lambda.use(
             validator({
                 eventSchema: transpileSchema({

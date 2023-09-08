@@ -66,13 +66,15 @@ const main = async () => {
     await shell('cp .serverless/awsRunner.zip tmp/awsRunner.zip');
     await shell('cp .serverless/awsReturner.zip tmp/awsReturner.zip');
     await Promise.allSettled([
-        transformPackage('awsRunner', 'foppa-aws-runner'),
         transformPackage('awsReturner', 'foppa-aws-returner'),
-        getEnvVariables('awsRunner', 'foppa-aws-runner'),
         getEnvVariables('awsReturner', 'foppa-aws-returner'),
     ]);
 
-    const uploadSpinner = createSpinner('uploading code...');
+    await Promise.allSettled([
+        transformPackage('awsRunner', 'foppa-aws-runner'),
+        getEnvVariables('awsRunner', 'foppa-aws-runner'),
+    ]);
+    const uploadSpinner = createSpinner('uploading code...\n');
 
     uploadSpinner.start();
     Promise.all([

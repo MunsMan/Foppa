@@ -19,17 +19,12 @@ const functionService: ValidatedEventAPIGatewayProxyEvent<typeof undefined> = as
             const [provider, region] = parsePRegion(value.pregion);
             return { region, provider, regionExecutionCount: value.executionCounter };
         });
-        const functionName = (
-            await db.getValues('RegionRunnerURL', {
-                uFunctionId: toUFunctionId(username, functionId),
-            })
-        )[0].functionName;
-        const executionCounter = (
-            await db.getValue('FunctionExecutionCounter', {
-                username,
-                functionId,
-            })
-        ).executionCounter;
+        const functionCounter = await db.getValue('FunctionExecutionCounter', {
+            username,
+            functionId,
+        });
+        const executionCounter = functionCounter.executionCounter;
+        const functionName = functionCounter.functionName;
         return formatJSONResponse({
             username,
             functionId,
