@@ -115,7 +115,7 @@ const uploadFunction = async (
             uFunctionId: toUFunctionId(username, functionId),
             pregion: toPRegion('aws', region),
             functionName: functionName,
-            url: runnerUrl,
+            url: `${runnerUrl}/invoke`,
         }),
 
         addLambdaReturnTrigger(lambdaClient, userLambdaARN, returnerARN),
