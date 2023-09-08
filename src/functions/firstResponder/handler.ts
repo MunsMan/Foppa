@@ -26,10 +26,10 @@ const firstResponder: APIGatewayProxyEvent = async (event) => {
             payload: event.body,
             logs: {
                 user: {
-                    requestId: event.requestContext.requestId,
-                    accoundId: event.requestContext.accountId,
-                    ip: (event.requestContext as any).http.sourceIp,
-                    method: (event.requestContext as any).http.method,
+                    requestId: event.requestContext?.requestId,
+                    accoundId: event.requestContext?.accountId,
+                    ip: (event.requestContext as any)?.http.sourceIp,
+                    method: (event.requestContext as any)?.http.method,
                 },
                 executionStart,
                 executionEnd,
