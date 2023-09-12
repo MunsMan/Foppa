@@ -5,7 +5,7 @@ const optimizationRequest = async (event: SNSEvent) => {
     const { username, functionId, executionId, logs } = JSON.parse(
         event.Records[0].Sns.Message
     ) as OptimizationRequest;
-    const { executionStart, executionEnd, body } = logs;
+    const { executionStart, executionEnd, body, requestId } = logs;
     const log = {
         username,
         functionId,
@@ -13,6 +13,7 @@ const optimizationRequest = async (event: SNSEvent) => {
         body,
         firstResponder: {
             logs: {
+                requestId,
                 executionStart,
                 executionEnd,
             },
