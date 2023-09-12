@@ -4,6 +4,7 @@ import httpErrorHandler from '@middy/http-error-handler';
 import validator from '@middy/validator';
 import { transpileSchema } from '@middy/validator/transpile';
 import {
+    AddPermissionCommand,
     CreateFunctionCommand,
     CreateFunctionCommandOutput,
     CreateFunctionUrlConfigCommand,
@@ -195,4 +196,23 @@ export const getLambdaUrl = async (lambdaClient: LambdaClient, functionName: str
             return (await createLambdaUrl(lambdaClient, functionName)).FunctionUrl;
         }
     }
+};
+
+type PermissionPrincipal = 'apigateway.amazonaws.com';
+
+export const addInvokePermission = async (
+    lambdaClient: LambdaClient,
+    lambdaArn: string,
+    sourceArn: string,
+    priciple: PermissionPrincipal = 'apigateway.amazonaws.com'
+) => {
+    lambdaClient.send(
+        new AddPermissionCommand({
+            Action: 'lambda:InvokeFunction',
+            FunctionName: lambdaArn,
+            Principal: priciple,
+            SourceArn: sourceArn,
+            StatementId: `Foppa-lambdaPermission-${Math.round(Math.random() * 1000)}`,
+        })
+    );
 };
