@@ -7,8 +7,6 @@ import {
 } from '@aws-sdk/client-cloudwatch-logs';
 import { sleep } from './utils';
 
-const client = new CloudWatchLogsClient({});
-
 export const getExecutionLog = async (
     cloudwatchClient: CloudWatchLogsClient,
     functionName: string,
@@ -16,15 +14,22 @@ export const getExecutionLog = async (
     executionStart?: number
 ) => {
     const logGroupName = `/aws/lambda/${functionName}`;
-    const logStream = await getLogStream(logGroupName);
-    while (true) {
-        const logs = await getLogs(logGroupName, logStream.logStreamName, executionStart);
+    for (let i = 0; i < 5; i++) {
+        const logStreams = await getLogStreams(cloudwatchClient, logGroupName, executionStart);
+        const logs = (
+            await Promise.all(
+                logStreams.map((logStream) =>
+                    getLogs(cloudwatchClient, logGroupName, logStream.logStreamName, executionStart)
+                )
+            )
+        ).flat();
         const functionLogs = logs.filter((log) => log.message.includes(requestId));
-        if (functionLogs) {
+        if (functionLogs.length) {
             return functionLogs;
         }
-        await sleep(300);
+        await sleep(200);
     }
+    return [];
 };
 
 const getLogStreams = async (
