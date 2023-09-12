@@ -5,7 +5,7 @@ import { middyfy } from '@libs/lambda';
 
 const client = new LambdaClient({});
 
-const awsRunner: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (event) => {
+const awsRunner: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (event, context) => {
     console.log(event);
     const encoder = new TextEncoder();
     const payload = {
@@ -17,6 +17,7 @@ const awsRunner: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (even
             executionId: event.body.executionId,
             pregion: event.body.pregion,
             executionStart: Date.now(),
+            runnerRequestId: context.awsRequestId,
         },
     };
     const input: InvokeCommandInput = {

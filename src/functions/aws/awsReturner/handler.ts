@@ -1,9 +1,12 @@
 import { getExecutionLog } from '@libs/cloudwatch';
+import { Context } from 'aws-lambda';
 import axios from 'axios';
 const SERVICE_URL = process.env.SERVICE_URL;
 
 const awsReturner = async (event: any) => {
     const { uFunctionId, executionStart, executionId, pregion, functionName } =
+const awsReturner = async (event: any, context: Context) => {
+    const { uFunctionId, executionStart, executionId, pregion, functionName, runnerRequestId } =
         event.requestPayload.metadata;
     const executionEnd = Date.now();
     const userFunctionLogs = await getExecutionLog(
@@ -18,6 +21,8 @@ const awsReturner = async (event: any) => {
         executionId,
         pregion,
         userFunctionLogs,
+        runnerRequestId,
+        returnerRequestId: context.awsRequestId,
     });
 };
 
