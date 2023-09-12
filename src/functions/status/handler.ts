@@ -1,5 +1,5 @@
-import { formatJSONResponse, ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway";
-import { getLog, LogEventTypes } from "@libs/s3";
+import { formatJSONResponse, ValidatedEventAPIGatewayProxyEvent } from '@libs/api-gateway';
+import { getLog, LogEventTypes } from '@libs/s3';
 
 const status: ValidatedEventAPIGatewayProxyEvent<null> = async (event) => {
     const { username, functionId, executionId } = event.pathParameters;
@@ -7,20 +7,21 @@ const status: ValidatedEventAPIGatewayProxyEvent<null> = async (event) => {
         const log = await getLog('foppa-logs', { username, functionId, executionId });
         const status = {
             status: 'unknown',
-            steps: { done: -1, from: LogEventTypes.length - 1 }
-        }
+            steps: { done: 0, from: LogEventTypes.length },
+            logs: log,
+        };
         for (const event of LogEventTypes) {
-            console.log(event)
-            if (!Object.keys(log).includes(event)) break
+            console.log(event);
+            if (!Object.keys(log).includes(event)) break;
             status.steps.done++;
-            status.status = LogEventTypes[status.steps.done]
+            status.status = LogEventTypes[status.steps.done - 1];
         }
-        if (status.status === 'finished') {
-            status.payload = log.finished.response.result
+        if (status.status === 'returner') {
+            status.payload = log.returner.response.result;
         }
-        return formatJSONResponse(status)
+        return formatJSONResponse(status);
     } catch {
-        return formatJSONResponse({ status: 'unknown' }, 400)
+        return formatJSONResponse({ status: 'unknown' }, 400);
     }
 };
 
