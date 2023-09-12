@@ -106,6 +106,21 @@ interface LogObject {
         currentRegionLoad: number;
         logs: ServiceLogs;
     };
+    returner: {
+        logs: ServiceLogs;
+        awsWrapper: {
+            awsExecutionStart: number;
+            awsExecutionEnd: number;
+            runnerRequestId: string;
+            returnerRequestId: string;
+            pregion: string;
+        };
+        response: {
+            result: string;
+            type: 'json';
+        };
+        userFunctionLogs: string[];
+    };
 }
 
 interface StatusObject {}
