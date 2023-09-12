@@ -136,3 +136,13 @@ interface StatusResponse {
     logs: LogObject;
     payload?: string;
 }
+
+interface LogWatcherResponse {
+    requestIds: string[];
+    functionName: string;
+    logs: {
+        timestamp?: number;
+        message?: string;
+        ingestionTime?: number;
+    }[];
+}
