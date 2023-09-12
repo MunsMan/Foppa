@@ -1,9 +1,9 @@
 import { handlerPath } from '@libs/handler-resolver';
 import variables from 'variables';
 
-
 export default {
     handler: `${handlerPath(__dirname)}/handler.main`,
+    timeout: 10,
     events: [
         {
             httpApi: {
@@ -12,9 +12,8 @@ export default {
             },
         },
     ],
-    environment:
-    {
+    environment: {
         deploymentId: '${sls:instanceId}',
-        CODE_BUCKET: variables.FOPPA_BUCKET_NAME
-    }
+        CODE_BUCKET: variables.FOPPA_BUCKET_NAME,
+    },
 };

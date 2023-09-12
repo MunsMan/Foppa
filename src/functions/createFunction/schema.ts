@@ -22,5 +22,5 @@ export default {
         },
         handler: { type: 'string' },
     },
-    required: ['functionName', 'role', 'runtime', 'regions'],
+    required: ['functionName', 'runtime', 'regions', 'handler'],
 } as const;

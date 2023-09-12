@@ -5,5 +5,5 @@
     "pathParameters": {
         "username": "munsman"
     },
-    "body": "{\"functionName\":\"test123\",\"region\":\"us-west-2\",\"runtime\":\"nodejs18.x\",\"role\":\"arn:aws:iam::807699729275:role/LabRole\",\"handler\":\"example_function.handler\",\"zip_file\":\"data:application/zip;base64,UEsDBBQAAAAIAJpo+lZkxKcRTwAAAG0AAAATABwAZXhhbXBsZV9mdW5jdGlvbi5qc1VUCQAD1P3AZNX9wGR1eAsAAQT1AQAABBQAAABLzs8rLlHISMxLyUktUrBV0EgtS80r0VSwtVOo5lIAgmSggvycVL2c/HSoHIaweklqcYm6JlctF1dufkopUDS1oiC/qKQYaF413Oxaay4AUEsBAh4DFAAAAAgAmmj6VmTEpxFPAAAAbQAAABMAGAAAAAAAAQAAAKCBAAAAAGV4YW1wbGVfZnVuY3Rpb24uanNVVAUAA9T9wGR1eAsAAQT1AQAABBQAAABQSwUGAAAAAAEAAQBZAAAAnAAAAAAA\",\"username\":\"test\"}"
+    "body": "{\"functionName\":\"test123\",\"regions\":[\"us-west-2\",\"us-east-1\"],\"runtime\":\"nodejs18.x\",\"role\":\"arn:aws:iam::807699729275:role/LabRole\",\"handler\":\"example_function.handler\",\"zip_file\":\"data:application/zip;base64,UEsDBBQAAAAIAJpo+lZkxKcRTwAAAG0AAAATABwAZXhhbXBsZV9mdW5jdGlvbi5qc1VUCQAD1P3AZNX9wGR1eAsAAQT1AQAABBQAAABLzs8rLlHISMxLyUktUrBV0EgtS80r0VSwtVOo5lIAgmSggvycVL2c/HSoHIaweklqcYm6JlctF1dufkopUDS1oiC/qKQYaF413Oxaay4AUEsBAh4DFAAAAAgAmmj6VmTEpxFPAAAAbQAAABMAGAAAAAAAAQAAAKCBAAAAAGV4YW1wbGVfZnVuY3Rpb24uanNVVAUAA9T9wGR1eAsAAQT1AQAABBQAAABQSwUGAAAAAAEAAQBZAAAAnAAAAAAA\",\"username\":\"test\"}"
 }
