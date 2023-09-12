@@ -5,7 +5,7 @@ import { sendMessage } from '@libs/sns';
 
 const TOPIC = process.env.TOPIC;
 
-const firstResponder: APIGatewayProxyEvent = async (event) => {
+const firstResponder: APIGatewayProxyEvent = async (event, context) => {
     console.log(event);
     const executionStart = Date.now();
     const db: DB = new DynamoDB();
@@ -31,6 +31,7 @@ const firstResponder: APIGatewayProxyEvent = async (event) => {
                     ip: (event.requestContext as any)?.http.sourceIp,
                     method: (event.requestContext as any)?.http.method,
                 },
+                requestId: context.awsRequestId,
                 executionStart,
                 executionEnd,
                 body: event.body ? true : false,
