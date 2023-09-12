@@ -7,7 +7,12 @@ const runRequest = async (event: SNSEvent) => {
     ) as FunctionRunRequest;
     const log = {
         deployment,
-        logs,
+        logs: {
+            executionStart: logs.executionStart,
+            executionEnd: logs.executionEnd,
+            requestId: logs.requestId,
+        },
+        decisionLogs: logs.decisionLogs,
     };
     return await appendLog('foppa-logs', { username, functionId, executionId }, 'scheduler', log);
 };

@@ -1,4 +1,8 @@
-interface OptimizationRequest extends GeneralRequest {
+interface OptimizationRequest {
+    username: string;
+    functionId: string;
+    executionId: string;
+    payload?: string;
     logs: OptimizationRequestLog;
 }
 
@@ -9,35 +13,44 @@ interface GeneralRequest {
     payload?: string;
 }
 
-interface OptimizationRequestLog extends ApplicationLog {
+interface UserRequestLog {
+    requestId: string;
+    accoundId: string;
+    ip: string;
+    method: string;
+}
+
+interface OptimizationRequestLog {
     body: boolean;
-    user?: {
-        requestId: string;
-        accoundId: string;
-        ip: string;
-        method: string;
-    };
-}
-
-interface FunctionRequestLog extends ApplicationLog {
-    decisionLogs: {
-        regionExecutionCounter: number;
-        regionCost: number;
-        uFunctionId: string;
-        pregion: string;
-        functionName?: string;
-        url?: string;
-    }[];
-}
-
-interface ApplicationLog extends Log {
+    user?: UserRequestLog;
     executionStart: number;
     executionEnd: number;
+    requestId: string;
+}
+
+interface DecisionLog {
+    regionExecutionCounter: number;
+    regionCost: number;
+    uFunctionId: string;
+    pregion: string;
+    functionName?: string;
+    url?: string;
+}
+
+interface FunctionRequestLog {
+    decisionLogs: DecisionLog[];
+    executionStart: number;
+    executionEnd: number;
+    requestId: string;
 }
 
 type CloudProvider = 'aws';
 
-interface FunctionRunRequest extends GeneralRequest {
+interface FunctionRunRequest {
+    username: string;
+    functionId: string;
+    executionId: string;
+    payload?: string;
     deployment: {
         provider: CloudProvider;
         region: string;
@@ -51,8 +64,6 @@ interface LogIdentifier {
     executionId: string;
 }
 
-type Log = { [event in string]: Log | string | number | boolean | Log[] };
-
 interface FunctionExecutionCounterValue {
     username: string;
     functionId: string;
@@ -65,3 +76,36 @@ interface RegionRunnerUrlValue {
     url: string;
     functionName: string;
 }
+
+interface ServiceLogs {
+    requestId: string;
+    executionStart: string;
+    executionEnd: string;
+}
+
+interface LogObject {
+    username: string;
+    functionId: string;
+    executionId: string;
+    body: boolean;
+    firstResponder: {
+        logs: ServiceLogs;
+        user?: UserRequestLog;
+    };
+    scheduler?: {
+        logs: ServiceLogs;
+        deployment: {
+            provider: string;
+            region: string;
+        };
+        decisionLogs: DecisionLog[];
+    };
+    runner?: {
+        url: string;
+        status: number;
+        currentRegionLoad: number;
+        logs: ServiceLogs;
+    };
+}
+
+interface StatusObject {}
