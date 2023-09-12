@@ -5,7 +5,7 @@ import DynamoDB from '@libs/dynamodb';
 import { appendLog } from '@libs/s3';
 import { toUFunctionId } from '@libs/parser';
 
-const returner: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (event) => {
+const returner: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (event, context) => {
     const executionStart = Date.now();
     const { username, functionId } = event.pathParameters;
     const {
@@ -29,6 +29,7 @@ const returner: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (event
         logs: {
             executionStart,
             executionEnd: Date.now(),
+            requestId: context.awsRequestId,
         },
     };
     await appendLog('foppa-logs', { username, functionId, executionId }, 'returner', log);
