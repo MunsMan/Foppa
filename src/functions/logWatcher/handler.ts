@@ -14,7 +14,7 @@ const logWatcher: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (eve
     }
     const logs = await getOldExecutionLog(
         new CloudWatchLogsClient({ region }),
-        `foppa-dev-${functionName}`,
+        functionName,
         requestIds,
         executionStart
     );
@@ -22,7 +22,7 @@ const logWatcher: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (eve
         requestIds,
         functionName,
         logs,
-    });
+    } satisfies LogWatcherResponse);
 };
 
 export const main = middyfy(logWatcher, schema);
