@@ -1,5 +1,6 @@
+import { Region } from '@consts/aws';
 import { sleep } from '@libs/utils';
-import axios from 'axios';
+import axios, { type AxiosResponse } from 'axios';
 import { writeFile } from 'fs/promises';
 import variables from 'variables';
 
@@ -51,7 +52,7 @@ const pullRuntimeStatus = async (executionIds: number[]) => {
     const statusLogs = await Promise.allSettled(
         executionIds.map((executionId) => pullLogs(executionId.toString()))
     );
-    const outputData = statusLogs.reduce((res, value) => {
+    const outputData = statusLogs.reduce<StatusResponse[]>((res, value) => {
         if (value.status === 'fulfilled') {
             res.push(value.value.data);
         }
@@ -60,17 +61,8 @@ const pullRuntimeStatus = async (executionIds: number[]) => {
     return outputData;
 };
 
-// @ts-ignore
-const main = async () => {
-    const status = await triggerWorkflow(CONCURRENT_REQUESTS);
-    await sleep(30000);
-    const executionIds = status.data.map((value) => value.executionId);
-    const outputData = await pullRuntimeStatus(executionIds);
-    console.dir(outputData, { depth: null });
+const saveData = async (outputData: StatusResponse[]) => {
     const plotData = outputData.reduce((res, value) => {
-        if (value === 'rejected') {
-            return res;
-        }
         res.push({
             firstResponderStart: value.logs.firstResponder.logs.executionStart,
             firstResponderEnd: value.logs.firstResponder.logs.executionEnd,
@@ -86,6 +78,124 @@ const main = async () => {
         return res;
     }, []);
     await writeFile('executionTimes.json', JSON.stringify(plotData));
+};
+
+interface CloudWatchRequest {
+    functionName: string;
+    executionStart: number;
+    region: Region;
+    requestId: string;
+}
+
+const pullLog = (
+    functionName: string,
+    requestIds: string[],
+    region: Region,
+    executionStart: number
+) =>
+    axios.post<LogWatcherResponse>(`${BACKEND_URL}/logs`, {
+        functionName,
+        requestIds,
+        region,
+        executionStart,
+    });
+
+const mapFunctionNames = {
+    firstResponder: 'foppa-dev-firstResponder',
+    scheduler: 'foppa-dev-scheduler',
+    runner: 'foppa-dev-runner',
+    returner: 'foppa-dev-returner',
+    awsRunner: 'foppa-aws-runner',
+    awsReturner: 'foppa-aws-returner',
+};
+
+const pullFoppaRuntimeLogs = async (requests: CloudWatchRequest[]) => {
+    const batches = requests.reduce<Map<string, CloudWatchRequest[]>>((res, value) => {
+        let batch: CloudWatchRequest[] = [];
+        if (res.has(value.functionName)) {
+            batch = res.get(value.functionName);
+        }
+        batch.push(value);
+        res.set(value.functionName, batch);
+        return res;
+    }, new Map());
+    console.log(batches);
+    const promises: Promise<AxiosResponse<LogWatcherResponse, any>>[] = [];
+    for (const batch of batches.values()) {
+        const requestIds = batch.map((request) => request.requestId);
+        batch.sort((a, b) => a.executionStart - b.executionStart);
+        const region = batch[0].region;
+        const functionName = batch[0].functionName;
+        const startTime = new Date(batch[0].executionStart);
+        startTime.setMinutes(startTime.getMinutes() - 3);
+        const executionStart = startTime.getTime();
+        promises.push(
+            pullLog(
+                mapFunctionNames[functionName] ?? functionName,
+                requestIds,
+                region,
+                executionStart
+            )
+        );
+    }
+    return promises;
+};
+
+// @ts-ignore
+const main = async () => {
+    const status = await triggerWorkflow(CONCURRENT_REQUESTS);
+    await sleep(30000);
+    const executionIds = status.data.map((value) => value.executionId);
+    const outputData = await pullRuntimeStatus(executionIds);
+    await saveData(outputData);
+    const requests = outputData.map<CloudWatchRequest[]>((item) => [
+        {
+            functionName: 'firstResponder',
+            region: variables.REGION,
+            requestId: item.logs.firstResponder.logs.requestId,
+            executionStart: item.logs.firstResponder.logs.executionStart,
+        },
+        {
+            functionName: 'scheduler',
+            region: variables.REGION,
+            requestId: item.logs.scheduler.logs.requestId,
+            executionStart: item.logs.scheduler.logs.executionStart,
+        },
+        {
+            functionName: 'runner',
+            region: variables.REGION,
+            requestId: item.logs.runner.logs.requestId,
+            executionStart: item.logs.runner.logs.executionStart,
+        },
+        {
+            functionName: 'returner',
+            region: variables.REGION,
+            requestId: item.logs.returner.logs.requestId,
+            executionStart: item.logs.returner.logs.executionStart,
+        },
+        {
+            functionName: 'awsReturner',
+            region: item.logs.scheduler.deployment.region as Region,
+            requestId: item.logs.returner.awsWrapper.returnerRequestId,
+            executionStart: item.logs.returner.awsWrapper.awsExecutionStart,
+        },
+        {
+            functionName: 'awsRunner',
+            region: item.logs.scheduler.deployment.region as Region,
+            requestId: item.logs.returner.awsWrapper.runnerRequestId,
+            executionStart: item.logs.returner.awsWrapper.awsExecutionStart,
+        },
+        {
+            functionName: item.logs.scheduler.decisionLogs.filter(
+                (log) => log.pregion === item.logs.returner.awsWrapper.pregion
+            )[0].functionName,
+            region: item.logs.scheduler.deployment.region as Region,
+            requestId: item.logs.returner.userFunctionRequestId,
+            executionStart: item.logs.returner.awsWrapper.awsExecutionStart,
+        },
+    ]);
+    const cloudwatchlogs = await pullFoppaRuntimeLogs(requests.flat());
+    console.dir(cloudwatchlogs, { depth: null });
 };
 
 main();
