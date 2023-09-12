@@ -13,16 +13,24 @@ import status from '@functions/status';
 import functionService from '@functions/services/function';
 import loginService from '@functions/services/login';
 import signInService from '@functions/services/signIn';
+import logWatcher from '@functions/logWatcher';
 
 const serverlessConfiguration: AWS = {
     service: 'foppa',
+    configValidationMode: 'error',
     frameworkVersion: '3',
     plugins: ['serverless-esbuild'],
     provider: {
         name: 'aws',
         profile: 'foppa',
+        region: 'eu-central-1',
         runtime: 'nodejs18.x',
         stage: 'dev',
+        stackTags: {
+            Project: 'Foppa',
+            Deployment: 'Serverless',
+            Author: 'Hendrik',
+        },
         apiGateway: {
             minimumCompressionSize: 1024,
             shouldStartNameWithService: true,
@@ -32,7 +40,7 @@ const serverlessConfiguration: AWS = {
             NODE_OPTIONS: '--enable-source-maps --stack-trace-limit=1000',
         },
         iam: {
-            role: 'arn:aws:iam::807699729275:role/LabRole',
+            role: 'arn:aws:iam::717556240325:role/Foppa_full_lambda_role',
         },
         deploymentBucket: {
             name: '${self:service}-deployment-${self:provider.stage}',
@@ -53,6 +61,7 @@ const serverlessConfiguration: AWS = {
         functionService,
         loginService,
         signInService,
+        logWatcher,
     },
     package: { individually: true },
     custom: {
@@ -75,6 +84,26 @@ const serverlessConfiguration: AWS = {
                     BucketName: 'foppa-logs',
                 },
             },
+            DeploymentBucket: {
+                Type: 'AWS::S3::Bucket',
+                Properties: {
+                    BucketName: 'foppa',
+                },
+            },
+            // OptimizationRequestTopic: {
+            //     Type: 'AWS::SNS::Topic',
+            //     Properties: {
+            //         DisplayName: 'Optimization Request Topic',
+            //         TopicName: 'OptimizationRequestTopic',
+            //     },
+            // },
+            // RunRequestTopic: {
+            //     Type: 'AWS::SNS::Topic',
+            //     Properties: {
+            //         DisplayName: 'Run Request Topic',
+            //         TopicName: 'RunRequestTopic',
+            //     },
+            // },
             FunctionExecutionCounter: {
                 Type: 'AWS::DynamoDB::Table',
                 Properties: {
