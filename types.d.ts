@@ -79,8 +79,40 @@ interface RegionRunnerUrlValue {
 
 interface ServiceLogs {
     requestId: string;
-    executionStart: string;
-    executionEnd: string;
+    executionStart: number;
+    executionEnd: number;
+}
+
+interface ReturnerLog {
+    logs: ServiceLogs;
+    awsWrapper: {
+        awsExecutionStart: number;
+        awsExecutionEnd: number;
+        runnerRequestId: string;
+        returnerRequestId: string;
+        pregion: string;
+    };
+    response: {
+        result: string;
+        type: 'json';
+    };
+    userFunctionLogs: string[];
+}
+
+interface SchedulerLog {
+    logs: ServiceLogs;
+    deployment: {
+        provider: string;
+        region: string;
+    };
+    decisionLogs: DecisionLog[];
+}
+
+interface RunnerLog {
+    url: string;
+    status: number;
+    currentRegionLoad: number;
+    logs: ServiceLogs;
 }
 
 interface LogObject {
@@ -92,35 +124,14 @@ interface LogObject {
         logs: ServiceLogs;
         user?: UserRequestLog;
     };
-    scheduler?: {
-        logs: ServiceLogs;
-        deployment: {
-            provider: string;
-            region: string;
-        };
-        decisionLogs: DecisionLog[];
-    };
-    runner?: {
-        url: string;
-        status: number;
-        currentRegionLoad: number;
-        logs: ServiceLogs;
-    };
-    returner: {
-        logs: ServiceLogs;
-        awsWrapper: {
-            awsExecutionStart: number;
-            awsExecutionEnd: number;
-            runnerRequestId: string;
-            returnerRequestId: string;
-            pregion: string;
-        };
-        response: {
-            result: string;
-            type: 'json';
-        };
-        userFunctionLogs: string[];
-    };
+    scheduler?: SchedulerLog;
+    runner?: RunnerLog;
+    returner?: ReturnerLog;
 }
 
-interface StatusObject {}
+interface StatusResponse {
+    status: 'unknown' | 'firstResponder' | 'scheduler' | 'runner' | 'returner';
+    steps: { done: number; from: number };
+    logs: LogObject;
+    payload?: string;
+}

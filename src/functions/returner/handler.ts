@@ -22,7 +22,7 @@ const returner: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (event
     const uFunctionId = toUFunctionId(username, functionId);
 
     await db.decrValue('RegionExecutionCounter', { uFunctionId, pregion }, 'executionCounter');
-    const log = {
+    const log: ReturnerLog = {
         response: { result, type: 'json' },
         awsWrapper: {
             awsExecutionStart,

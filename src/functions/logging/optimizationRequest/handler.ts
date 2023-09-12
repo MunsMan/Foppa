@@ -6,7 +6,7 @@ const optimizationRequest = async (event: SNSEvent) => {
         event.Records[0].Sns.Message
     ) as OptimizationRequest;
     const { executionStart, executionEnd, body, requestId } = logs;
-    const log = {
+    const log: LogObject = {
         username,
         functionId,
         executionId,
