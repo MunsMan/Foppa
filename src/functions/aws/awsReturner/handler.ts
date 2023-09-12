@@ -23,6 +23,7 @@ const awsReturner = async (event: any, context: Context) => {
         userFunctionLogs,
         runnerRequestId,
         returnerRequestId: context.awsRequestId,
+        userFunctionRequestId: event.requestContext.requestId,
     });
 };
 

@@ -17,6 +17,7 @@ const returner: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (event
         userFunctionLogs,
         runnerRequestId,
         returnerRequestId,
+        userFunctionRequestId,
     } = event.body;
     const db: DB = new DynamoDB();
     const uFunctionId = toUFunctionId(username, functionId);
@@ -31,6 +32,7 @@ const returner: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (event
             returnerRequestId,
             pregion,
         },
+        userFunctionRequestId,
         userFunctionLogs,
         logs: {
             executionStart,

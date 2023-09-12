@@ -97,6 +97,7 @@ interface ReturnerLog {
         type: 'json';
     };
     userFunctionLogs: string[];
+    userFunctionRequestId: string;
 }
 
 interface SchedulerLog {
