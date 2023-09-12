@@ -1,6 +1,7 @@
 import type { ValidatedEventAPIGatewayProxyEvent } from '@libs/api-gateway';
 import AwsApiGateway, { formatJSONResponse } from '@libs/api-gateway';
 import {
+    addInvokePermission,
     addLambdaReturnTrigger,
     isCreateOutput,
     middyfy,
@@ -100,6 +101,8 @@ const uploadFunction = async (
 
     const apiName = `foppa-${region}-api`;
     let runnerUrl = (await api.setupApiGateway(apiName, runnerARN)).ApiEndpoint;
+    const { ApiEndpoint: runnerUrl, ApiId: apiId } = await api.setupApiGateway(apiName, runnerARN);
+    const sourceArn = `arn:aws:execute-api:${region}:${accountId}:${apiId}/*/*/invoke`;
 
     const userLambdaARN = isCreateOutput(lambdaResponse)
         ? lambdaResponse.FunctionArn
@@ -118,6 +121,7 @@ const uploadFunction = async (
             url: `${runnerUrl}/invoke`,
         }),
 
+        addInvokePermission(lambdaClient, runnerARN, sourceArn),
         addLambdaReturnTrigger(lambdaClient, userLambdaARN, returnerARN),
     ]);
 };
