@@ -32,6 +32,29 @@ export const getExecutionLog = async (
     return [];
 };
 
+export const getOldExecutionLog = async (
+    cloudwatchClient: CloudWatchLogsClient,
+    functionName: string,
+    requestIds: string[],
+    executionStart?: number
+) => {
+    const logGroupName = `/aws/lambda/${functionName}`;
+    const logStreams = await getLogStreams(cloudwatchClient, logGroupName, executionStart);
+
+    const logs = (
+        await Promise.all(
+            logStreams.map((logStream) =>
+                getLogs(cloudwatchClient, logGroupName, logStream.logStreamName, executionStart)
+            )
+        )
+    ).flat();
+    console.log(`[getOldExecutionLog] requestIds: ${requestIds}`);
+    const functionLogs = logs.filter((log) =>
+        requestIds.some((requestId) => log.message.includes(requestId))
+    );
+    return functionLogs;
+};
+
 const getLogStreams = async (
     cloudwatchClient: CloudWatchLogsClient,
     logGroupName: string,
