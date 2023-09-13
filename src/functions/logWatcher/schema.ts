@@ -10,5 +10,5 @@ export default {
         requestIds: { type: 'array', items: { type: 'string' } },
         executionStart: { type: 'number' },
     },
-    required: ['region', 'functionName', 'requestId'],
+    required: ['region', 'functionName', 'requestIds'],
 } as const;
