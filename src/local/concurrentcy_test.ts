@@ -1,6 +1,6 @@
 import { Region } from '@consts/aws';
-import { sleep } from '@libs/utils';
-import axios, { type AxiosResponse } from 'axios';
+import { sleep, resolveObject } from '@libs/utils';
+import axios from 'axios';
 import { writeFile } from 'fs/promises';
 import variables from 'variables';
 
@@ -11,7 +11,7 @@ interface FirstResponse {
 }
 
 const BACKEND_URL = variables.SERVICE_URL;
-const CONCURRENT_REQUESTS = 1;
+const CONCURRENT_REQUESTS = 3;
 const USERNAME = 'munsman';
 const FUNCTION_ID = '1';
 
@@ -56,11 +56,12 @@ const pullRuntimeStatus = async (executionIds: number[]) => {
         if (value.status === 'fulfilled') {
             res.push(value.value.data);
         }
-        return [];
+        return res;
     }, []);
     return outputData;
 };
 
+// @ts-ignore
 const saveData = async (outputData: StatusResponse[]) => {
     const plotData = outputData.reduce((res, value) => {
         res.push({
@@ -86,6 +87,7 @@ interface CloudWatchRequest {
     region: Region;
     requestId: string;
 }
+type CloudWatchResponse = { requests: CloudWatchRequest[]; response: LogWatcherResponse };
 
 const pullLog = (
     functionName: string,
@@ -109,6 +111,10 @@ const mapFunctionNames = {
     awsReturner: 'foppa-aws-returner',
 };
 
+type PromiseObject = {
+    [K in string]: Promise<CloudWatchResponse>;
+};
+
 const pullFoppaRuntimeLogs = async (requests: CloudWatchRequest[]) => {
     const batches = requests.reduce<Map<string, CloudWatchRequest[]>>((res, value) => {
         let batch: CloudWatchRequest[] = [];
@@ -119,9 +125,8 @@ const pullFoppaRuntimeLogs = async (requests: CloudWatchRequest[]) => {
         res.set(value.functionName, batch);
         return res;
     }, new Map());
-    console.log(batches);
-    const promises: Promise<AxiosResponse<LogWatcherResponse, any>>[] = [];
-    for (const batch of batches.values()) {
+    const promises: PromiseObject = {};
+    for (const [key, batch] of batches.entries()) {
         const requestIds = batch.map((request) => request.requestId);
         batch.sort((a, b) => a.executionStart - b.executionStart);
         const region = batch[0].region;
@@ -129,16 +134,22 @@ const pullFoppaRuntimeLogs = async (requests: CloudWatchRequest[]) => {
         const startTime = new Date(batch[0].executionStart);
         startTime.setMinutes(startTime.getMinutes() - 3);
         const executionStart = startTime.getTime();
-        promises.push(
+        const promise = new Promise<CloudWatchResponse>((resolve) => {
             pullLog(
                 mapFunctionNames[functionName] ?? functionName,
                 requestIds,
                 region,
                 executionStart
-            )
-        );
+            ).then((res) => {
+                resolve({
+                    requests: batch,
+                    response: res.data,
+                });
+            });
+        });
+        promises[key] = promise;
     }
-    return promises;
+    return resolveObject(promises);
 };
 
 // @ts-ignore
@@ -147,7 +158,6 @@ const main = async () => {
     await sleep(30000);
     const executionIds = status.data.map((value) => value.executionId);
     const outputData = await pullRuntimeStatus(executionIds);
-    await saveData(outputData);
     const requests = outputData.map<CloudWatchRequest[]>((item) => [
         {
             functionName: 'firstResponder',
@@ -194,8 +204,25 @@ const main = async () => {
             executionStart: item.logs.returner.awsWrapper.awsExecutionStart,
         },
     ]);
+    console.dir(requests, { depth: null });
     const cloudwatchlogs = await pullFoppaRuntimeLogs(requests.flat());
-    console.dir(cloudwatchlogs, { depth: null });
+    const logData = Object.entries(cloudwatchlogs).map(([key, value]) => {
+        const reports = value.response.logs.filter((log) => log.message.includes('REPORT'));
+        const durations = reports.map((report) =>
+            Number(
+                report.message
+                    .split('\t')
+                    .filter((text) => text.includes('Duration'))[0]
+                    .split(' ')[1]
+            )
+        );
+        return {
+            functionName: key,
+            durations,
+            averageDuration: durations.reduce((res, value) => res + value, 0) / durations.length,
+        };
+    });
+    console.dir(logData, { depth: null });
 };
 
 main();
