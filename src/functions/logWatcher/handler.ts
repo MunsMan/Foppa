@@ -18,11 +18,12 @@ const logWatcher: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (eve
         requestIds,
         executionStart
     );
-    return formatJSONResponse({
+    const response: LogWatcherResponse = {
         requestIds,
         functionName,
         logs,
-    } satisfies LogWatcherResponse);
+    };
+    return formatJSONResponse(response);
 };
 
 export const main = middyfy(logWatcher, schema);
