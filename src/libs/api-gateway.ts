@@ -44,7 +44,7 @@ export const formatJSONResponse = (
 // 3. Connetct to Lambda
 // 4. (Optional) Add Auth
 
-interface ApiGateway {}
+interface ApiGateway { }
 
 class AwsApiGateway implements ApiGateway {
     private apiClient: ApiGatewayV2Client;
@@ -84,7 +84,6 @@ class AwsApiGateway implements ApiGateway {
                 ProtocolType: protocol,
                 Target: lambda,
                 RouteKey: 'POST /invoke',
-                CredentialsArn: 'arn:aws:iam::807699729275:role/LabRole',
             })
         );
         console.log('[INFO] - createApiGateway');

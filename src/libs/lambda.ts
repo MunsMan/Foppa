@@ -4,6 +4,7 @@ import httpErrorHandler from '@middy/http-error-handler';
 import validator from '@middy/validator';
 import { transpileSchema } from '@middy/validator/transpile';
 import {
+    AddPermissionCommand,
     CreateFunctionCommand,
     CreateFunctionCommandOutput,
     CreateFunctionUrlConfigCommand,
@@ -74,7 +75,8 @@ const createLambda = async (
             Runtime: 'nodejs18.x',
             Handler: handler,
             PackageType: 'Zip',
-            Environment: env,
+            Environment: { Variables: env },
+            Timeout: 10,
         })
     );
 };
@@ -129,7 +131,7 @@ export const uploadLambdaWrapper = async (
 ) => {
     const handler = 'handler.main';
     const username = 'foppa';
-    const s3Client = new S3Client({ region: 'us-east-1' });
+    const s3Client = new S3Client({});
     const [code_runner, code_returner, env_runner, env_returner] = await Promise.all([
         getFileS3(s3Client, bucket, `upload/${username}/${AWS_RUNNER}.zip`),
         getFileS3(s3Client, bucket, `upload/${username}/${AWS_RETURNER}.zip`),
@@ -195,4 +197,23 @@ export const getLambdaUrl = async (lambdaClient: LambdaClient, functionName: str
             return (await createLambdaUrl(lambdaClient, functionName)).FunctionUrl;
         }
     }
+};
+
+type PermissionPrincipal = 'apigateway.amazonaws.com';
+
+export const addInvokePermission = async (
+    lambdaClient: LambdaClient,
+    lambdaArn: string,
+    sourceArn: string,
+    priciple: PermissionPrincipal = 'apigateway.amazonaws.com'
+) => {
+    lambdaClient.send(
+        new AddPermissionCommand({
+            Action: 'lambda:InvokeFunction',
+            FunctionName: lambdaArn,
+            Principal: priciple,
+            SourceArn: sourceArn,
+            StatementId: `Foppa-lambdaPermission-${Math.round(Math.random() * 1000)}`,
+        })
+    );
 };

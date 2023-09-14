@@ -19,23 +19,36 @@ interface LogIdentifier {
     executionId: string;
 }
 
-export const LogEventTypes = [
-    'firstResponder',
-    'scheduler',
-    'runner',
-    'returner',
-] as const;
+export const LogEventTypes = ['scheduler', 'runner', 'returner'] as const;
 
-type LogEvents = (typeof LogEventTypes)[number];
+type LogEvent = (typeof LogEventTypes)[number];
 
-export const appendLog = async (
+type Log<T extends LogEvent> = T extends 'scheduler'
+    ? SchedulerLog
+    : T extends 'runner'
+    ? RunnerLog
+    : T extends 'returner'
+    ? ReturnerLog
+    : never;
+
+export const appendLog = async <T extends LogEvent>(
     bucket: Bucket,
     logId: LogIdentifier,
-    event: LogEvents,
-    log: Log
+    event: T,
+    log: Log<T>
 ) => {
     const logfile = await getLog(bucket, logId);
-    logfile[event] = log;
+    switch (event) {
+        case 'returner':
+            logfile.returner = log as ReturnerLog;
+            break;
+        case 'runner':
+            logfile.runner = log as RunnerLog;
+            break;
+        case 'scheduler':
+            logfile.scheduler = log as SchedulerLog;
+            break;
+    }
     return await putLog(bucket, logId, logfile);
 };
 
@@ -44,7 +57,7 @@ export const getLog = async (bucket: Bucket, logId: LogIdentifier) => {
     const key = `${username}/${functionId}/${executionId}.json`;
     const file = await getFile(bucket, key);
     if (file) {
-        const logfile: Log = JSON.parse(file);
+        const logfile: LogObject = JSON.parse(file);
         return logfile;
     }
     LogNotFound(logId);
@@ -73,7 +86,7 @@ export const getFileS3 = async (s3Client: S3Client, bucket: string, key: string)
     return Buffer.from(await response.Body.transformToByteArray());
 };
 
-export const putLog = async (bucket: Bucket, logId: LogIdentifier, log: Log) => {
+export const putLog = async (bucket: Bucket, logId: LogIdentifier, log: LogObject) => {
     const { username, functionId, executionId } = logId;
     const key = `${username}/${functionId}/${executionId}.json`;
     return await putFile(bucket, key, JSON.stringify(log));

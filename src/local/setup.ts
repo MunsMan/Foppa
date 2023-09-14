@@ -23,7 +23,7 @@ const credentials = fromIni({ profile: 'foppa' });
 
 const clientConfig = {
     credentials,
-    region: 'us-east-1',
+    region: 'eu-central-1',
 };
 
 const transformPackage = async (filename: string, outputName: string) => {

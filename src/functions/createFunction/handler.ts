@@ -1,6 +1,7 @@
 import type { ValidatedEventAPIGatewayProxyEvent } from '@libs/api-gateway';
 import AwsApiGateway, { formatJSONResponse } from '@libs/api-gateway';
 import {
+    addInvokePermission,
     addLambdaReturnTrigger,
     isCreateOutput,
     middyfy,
@@ -12,6 +13,7 @@ import schema from './schema';
 import DynamoDB from '@libs/dynamodb';
 import { toPRegion, toUFunctionId } from '@libs/parser';
 import { Region } from '@consts/aws';
+import { sleep } from '@libs/utils';
 
 const CODE_BUCKET = process.env.CODE_BUCKET;
 
@@ -21,7 +23,10 @@ const error = () => {
     });
 };
 
-const createFunction: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (event) => {
+const createFunction: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
+    event,
+    context
+) => {
     // Get Userdata for lambda client
 
     const functionName = event.body.functionName;
@@ -34,6 +39,7 @@ const createFunction: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async 
     const db = new DynamoDB();
 
     const functionId = await db.incrValue('UserManager', { username }, 'functionCounter');
+    const accountId = context.invokedFunctionArn.split(':')[4] ?? '';
     await Promise.all([
         ...regions.map((region) =>
             uploadFunction(
@@ -44,7 +50,8 @@ const createFunction: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async 
                 code,
                 db,
                 username,
-                functionId.toString()
+                functionId.toString(),
+                accountId
             )
         ),
         await db.putValue('FunctionExecutionCounter', {
@@ -68,7 +75,8 @@ const uploadFunction = async (
     code: Buffer,
     db: DB,
     username: string,
-    functionId: string
+    functionId: string,
+    accountId: string
 ) => {
     const api = new AwsApiGateway(region);
     const lambdaClient = new LambdaClient({ region });
@@ -99,12 +107,13 @@ const uploadFunction = async (
     console.log(runnerARN, returnerARN);
 
     const apiName = `foppa-${region}-api`;
-    let runnerUrl = (await api.setupApiGateway(apiName, runnerARN)).ApiEndpoint;
+    const { ApiEndpoint: runnerUrl, ApiId: apiId } = await api.setupApiGateway(apiName, runnerARN);
+    const sourceArn = `arn:aws:execute-api:${region}:${accountId}:${apiId}/*/*/invoke`;
 
     const userLambdaARN = isCreateOutput(lambdaResponse)
         ? lambdaResponse.FunctionArn
         : lambdaResponse.Configuration.FunctionArn;
-
+    await sleep(1000);
     await Promise.all([
         db.putValue('RegionExecutionCounter', {
             uFunctionId: toUFunctionId(username, functionId),
@@ -117,7 +126,7 @@ const uploadFunction = async (
             functionName: functionName,
             url: `${runnerUrl}/invoke`,
         }),
-
+        addInvokePermission(lambdaClient, runnerARN, sourceArn),
         addLambdaReturnTrigger(lambdaClient, userLambdaARN, returnerARN),
     ]);
 };

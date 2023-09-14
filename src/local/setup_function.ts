@@ -9,10 +9,11 @@ const apiName = `foppa-${region}-api-entry`;
 // const stage = 'test';
 // const route = 'foppa-aws-runner';
 const lambdaARN = 'arn:aws:lambda:us-west-2:807699729275:function:foppa-aws-runner';
+const role = 'arn:aws:iam::396912327770:role/LabRole';
 
 const setup_api = async () => {
     const api = new AwsApiGateway(region, credentials);
-    const apiInfos = await api.setupApiGateway(apiName, lambdaARN);
+    const apiInfos = await api.setupApiGateway(apiName, role, lambdaARN);
     // await api.addStage(stage);
     // const integrationId = await api.addIntegration(lambdaARN);
     // await api.addRoute(route, integrationId);

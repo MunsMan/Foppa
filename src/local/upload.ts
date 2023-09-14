@@ -7,7 +7,7 @@ import { localS3Upload } from '@libs/s3';
 const credentials = fromIni({ profile: 'foppa' });
 const clientConfig = {
     credentials,
-    region: 'us-east-1',
+    region: 'eu-central-1',
 };
 const s3Client = new S3Client(clientConfig);
 const lambdaClient = new LambdaClient(clientConfig);
@@ -21,7 +21,7 @@ if (process.argv.length === 3) {
     const file = process.argv[2];
     localS3Upload(s3Client, functionName, file, bucket, username).then((response) => {
         console.log(response);
-        uploadLambda(lambdaClient, functionName, role, username, 'handler.main');
+        uploadLambda(lambdaClient, functionName, username, 'handler.main', role);
     });
     console.log('lambda is uploaded!');
 } else {
