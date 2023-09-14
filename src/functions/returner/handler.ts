@@ -14,7 +14,6 @@ const returner: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (event
         result,
         executionEnd: awsExecutionEnd,
         executionStart: awsExecutionStart,
-        userFunctionLogs,
         runnerRequestId,
         returnerRequestId,
         userFunctionRequestId,
@@ -33,7 +32,6 @@ const returner: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (event
             pregion,
         },
         userFunctionRequestId,
-        userFunctionLogs,
         logs: {
             executionStart,
             executionEnd: Date.now(),
