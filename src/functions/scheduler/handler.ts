@@ -45,7 +45,7 @@ const CONCURRENCY_PENELTY = 5;
 const CONCURRENCY_LIMIT = 100;
 
 const concurrencyCost = (x: number) =>
-    (1 / Math.pow(CONCURRENCY_LIMIT, CONCURRENCY_PENELTY)) * Math.pow(x, CONCURRENCY_PENELTY);
+    (1 / Math.pow(CONCURRENCY_LIMIT, CONCURRENCY_PENELTY)) * Math.pow(x + 1, CONCURRENCY_PENELTY);
 
 const regionCost = (regionExecutionCouter: number) =>
     Math.random() * Math.pow(concurrencyCost(regionExecutionCouter), 5);
