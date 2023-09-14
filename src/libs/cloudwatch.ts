@@ -48,7 +48,6 @@ export const getOldExecutionLog = async (
             )
         )
     ).flat();
-    console.log(`[getOldExecutionLog] requestIds: ${requestIds}`);
     const functionLogs = logs.filter((log) =>
         requestIds.some((requestId) => log.message.includes(requestId))
     );
