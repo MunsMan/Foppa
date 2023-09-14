@@ -96,7 +96,6 @@ interface ReturnerLog {
         result: string;
         type: 'json';
     };
-    userFunctionLogs: string[];
     userFunctionRequestId: string;
 }
 

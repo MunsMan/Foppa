@@ -8,7 +8,5 @@ export default {
         executionStart: { type: 'string' },
         executionEnd: { type: 'string' },
     },
-    required: [
-        'pregion', 'executionId', 'executionStart', 'executionEnd'
-    ]
-}
+    required: ['pregion', 'executionId', 'executionStart', 'executionEnd'],
+};
