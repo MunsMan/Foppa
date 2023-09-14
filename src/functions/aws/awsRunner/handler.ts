@@ -25,8 +25,8 @@ const awsRunner: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (even
         Payload: encoder.encode(JSON.stringify(payload)),
         InvocationType: 'Event',
     };
-    const response = await client.send(new InvokeCommand(input));
-    return formatJSONResponse(response);
+    client.send(new InvokeCommand(input));
+    return formatJSONResponse({});
 };
 
 export const main = middyfy(awsRunner, schema);
