@@ -20,7 +20,11 @@ const optimizationRequest = async (event: SNSEvent) => {
             user: logs.user,
         },
     };
-    return await putLog('foppa-logs', { username, functionId, executionId }, log);
+    return await putLog(
+        'foppa-logs',
+        { username, functionId, executionId, event: 'firstResponder' },
+        log
+    );
 };
 
 export const main = optimizationRequest;

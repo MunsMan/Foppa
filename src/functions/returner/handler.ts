@@ -2,8 +2,8 @@ import { formatJSONResponse, ValidatedEventAPIGatewayProxyEvent } from '@libs/ap
 import { middyfy } from '@libs/lambda';
 import schema from './schema';
 import DynamoDB from '@libs/dynamodb';
-import { appendLog } from '@libs/s3';
 import { toUFunctionId } from '@libs/parser';
+import { putLog } from '@libs/s3';
 
 const returner: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (event, context) => {
     const executionStart = Date.now();
@@ -38,7 +38,7 @@ const returner: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (event
             requestId: context.awsRequestId,
         },
     };
-    await appendLog('foppa-logs', { username, functionId, executionId }, 'returner', log);
+    await putLog('foppa-logs', { username, functionId, executionId, event: 'returner' }, log);
     return formatJSONResponse({});
 };
 
