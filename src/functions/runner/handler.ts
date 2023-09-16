@@ -1,6 +1,6 @@
 import DynamoDB from '@libs/dynamodb';
 import { toPRegion, toUFunctionId } from '@libs/parser';
-import { appendLog } from '@libs/s3';
+import { putLog } from '@libs/s3';
 import type { Context, SNSEvent } from 'aws-lambda';
 import axios from 'axios';
 
@@ -25,12 +25,16 @@ const runner = async (event: SNSEvent, context: Context) => {
         pregion,
         executionId,
     });
-    await appendLog('foppa-logs', { username, functionId, executionId }, 'runner', {
-        url: dbResponse.url,
-        status: response.status,
-        currentRegionLoad,
-        logs: { executionStart, executionEnd: Date.now(), requestId: context.awsRequestId },
-    });
+    await putLog(
+        'foppa-logs',
+        { username, functionId, executionId, event: 'runner' },
+        {
+            url: dbResponse.url,
+            status: response.status,
+            currentRegionLoad,
+            logs: { executionStart, executionEnd: Date.now(), requestId: context.awsRequestId },
+        }
+    );
     return event;
 };
 

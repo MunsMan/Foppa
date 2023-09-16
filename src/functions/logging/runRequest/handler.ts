@@ -1,4 +1,4 @@
-import { appendLog } from '@libs/s3';
+import { putLog } from '@libs/s3';
 import type { SNSEvent } from 'aws-lambda';
 
 const runRequest = async (event: SNSEvent) => {
@@ -14,7 +14,11 @@ const runRequest = async (event: SNSEvent) => {
         },
         decisionLogs: logs.decisionLogs,
     };
-    return await appendLog('foppa-logs', { username, functionId, executionId }, 'scheduler', log);
+    return await putLog(
+        'foppa-logs',
+        { username, functionId, executionId, event: 'scheduler' },
+        log
+    );
 };
 
 export const main = runRequest;
