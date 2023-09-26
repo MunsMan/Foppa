@@ -1,27 +1,24 @@
-import { LambdaClient } from '@aws-sdk/client-lambda';
-import { S3Client } from '@aws-sdk/client-s3';
-import { fromIni } from '@aws-sdk/credential-provider-ini';
-import { uploadLambda } from '@libs/lambda';
-import { localS3Upload } from '@libs/s3';
+import axios from 'axios';
+import { readFileSync } from 'node:fs';
+import variables from 'variables';
 
-const credentials = fromIni({ profile: 'foppa' });
-const clientConfig = {
-    credentials,
-    region: 'eu-central-1',
-};
-const s3Client = new S3Client(clientConfig);
-const lambdaClient = new LambdaClient(clientConfig);
-
-const username = 'test';
-const functionName = 'test';
-const bucket = 'foppa';
-const role = 'arn:aws:iam::807699729275:role/LabRole';
+const username = 'munsman';
+const functionName = 'foppa-test-fib';
+const role = 'arn:aws:iam::717556240325:role/Foppa_default_lambda_role';
 
 if (process.argv.length === 3) {
     const file = process.argv[2];
-    localS3Upload(s3Client, functionName, file, bucket, username).then((response) => {
-        console.log(response);
-        uploadLambda(lambdaClient, functionName, username, 'handler.main', role);
+    const code = readFileSync(file).toString('base64');
+    axios.post(`${variables.SERVICE_URL}/create/${username}`, {
+        zip_file: code,
+        role,
+        functionName,
+        regions: ['eu-central-1', 'eu-west-1', 'eu-west-2', 'eu-west-3', 'eu-north-1'],
+        handler: 'index.handler',
+        runtime: 'nodejs18.x',
+        memorySize: 128,
+        timeout: 128,
+        env: {},
     });
     console.log('lambda is uploaded!');
 } else {
