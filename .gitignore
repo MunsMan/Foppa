@@ -22,3 +22,6 @@ tmp/
 
 # ignore test result directory
 test/
+
+# ignoring macOS system files
+.DS_Store
