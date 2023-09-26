@@ -7,7 +7,7 @@ const awsReturner = async (event: any, context: Context) => {
         event.requestPayload.metadata;
     const executionEnd = Date.now();
     await axios.post(`${SERVICE_URL}/return/${uFunctionId}`, {
-        result: event.responsePayload,
+        result: JSON.stringify(event.responsePayload),
         executionStart,
         executionEnd,
         executionId,
