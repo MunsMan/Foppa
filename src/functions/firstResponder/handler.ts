@@ -13,11 +13,11 @@ const firstResponder: APIGatewayProxyEvent = async (event, context) => {
 
     const entry = await db.getValue('FunctionExecutionCounter', { username, functionId });
     if ('executionCounter' in entry) {
-        const executionId = await db.incrValue(
+        const executionId = (await db.incrValue(
             'FunctionExecutionCounter',
             { username, functionId },
             'executionCounter'
-        );
+        )).toString();
         const executionEnd = Date.now();
         const message: OptimizationRequest = {
             username,
