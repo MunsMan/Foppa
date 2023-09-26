@@ -6,7 +6,8 @@
     "scripts": {
         "test": "jest",
         "upload": "ts-node src/local/upload.ts",
-        "setup": "ts-node src/local/setup.ts"
+        "setup": "ts-node src/local/setup.ts",
+        "build-fib": " esbuild src/testFunctions/fib/index.ts --bundle --minify --sourcemap --platform=node --target=es2020 --outfile=dist/index.js && cd dist && zip -r index.zip index.js*"
     },
     "engines": {
         "node": ">=18"
