@@ -34,25 +34,25 @@ const createFunction: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async 
     const role = event.body.role;
     const handler = event.body.handler;
     const regions = event.body.regions;
-    const code = Buffer.from(event.body.zip_file.split(',')[1], 'base64');
+    const code = Buffer.from(event.body.zip_file.split(',')[1] ?? event.body.zip_file, 'base64');
 
     const db = new DynamoDB();
 
     const functionId = await db.incrValue('UserManager', { username }, 'functionCounter');
     const accountId = context.invokedFunctionArn.split(':')[4] ?? '';
+    const functionConfig: FunctionConfig = {
+        functionName,
+        code,
+        handler,
+        role,
+        runtime: event.body.runtime,
+        memorySize: event.body.memorySize,
+        timeout: event.body.timeout,
+        env: event.body.env,
+    };
     await Promise.all([
         ...regions.map((region) =>
-            uploadFunction(
-                region,
-                functionName,
-                role,
-                handler,
-                code,
-                db,
-                username,
-                functionId.toString(),
-                accountId
-            )
+            uploadFunction(region, db, username, functionId.toString(), accountId, functionConfig)
         ),
         await db.putValue('FunctionExecutionCounter', {
             username,
@@ -69,21 +69,18 @@ const createFunction: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async 
 
 const uploadFunction = async (
     region: Region,
-    functionName: string,
-    role: string,
-    handler: string,
-    code: Buffer,
     db: DB,
     username: string,
     functionId: string,
-    accountId: string
+    accountId: string,
+    functionConfig: FunctionConfig
 ) => {
     const api = new AwsApiGateway(region);
     const lambdaClient = new LambdaClient({ region });
 
     const [wrapperUploadResponse, lambdaResponse] = await Promise.all([
-        uploadLambdaWrapper(lambdaClient, role, CODE_BUCKET),
-        uploadLambda(lambdaClient, functionName, role, handler, code),
+        uploadLambdaWrapper(lambdaClient, functionConfig.role, CODE_BUCKET),
+        uploadLambda(lambdaClient, functionConfig),
     ]);
 
     const runnerResponse = wrapperUploadResponse[0];
@@ -123,7 +120,7 @@ const uploadFunction = async (
         db.putValue('RegionRunnerURL', {
             uFunctionId: toUFunctionId(username, functionId),
             pregion: toPRegion('aws', region),
-            functionName: functionName,
+            functionName: functionConfig.functionName,
             url: `${runnerUrl}/invoke`,
         }),
         addInvokePermission(lambdaClient, runnerARN, sourceArn),
