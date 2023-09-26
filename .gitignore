@@ -16,3 +16,9 @@ dist/
 
 # tmp directory for experiments
 tmp/
+
+# private env data
+.env
+
+# ignore test result directory
+test/
