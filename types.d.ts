@@ -77,14 +77,14 @@ interface RegionRunnerUrlValue {
     functionName: string;
 }
 
-interface ServiceLogs {
+interface ServiceLog {
     requestId: string;
     executionStart: number;
     executionEnd: number;
 }
 
 interface ReturnerLog {
-    logs: ServiceLogs;
+    logs: ServiceLog;
     awsWrapper: {
         awsExecutionStart: number;
         awsExecutionEnd: number;
@@ -100,7 +100,7 @@ interface ReturnerLog {
 }
 
 interface SchedulerLog {
-    logs: ServiceLogs;
+    logs: ServiceLog;
     deployment: {
         provider: string;
         region: string;
@@ -112,7 +112,7 @@ interface RunnerLog {
     url: string;
     status: number;
     currentRegionLoad: number;
-    logs: ServiceLogs;
+    logs: ServiceLog;
 }
 
 interface LogObject {
@@ -121,7 +121,7 @@ interface LogObject {
     executionId: string;
     body: boolean;
     firstResponder: {
-        logs: ServiceLogs;
+        logs: ServiceLog;
         user?: UserRequestLog;
     };
     scheduler?: SchedulerLog;
@@ -144,4 +144,15 @@ interface LogWatcherResponse {
         message?: string;
         ingestionTime?: number;
     }[];
+}
+
+interface FunctionConfig {
+    functionName: string;
+    code: Buffer;
+    handler: string;
+    role: string;
+    runtime: string;
+    memorySize?: number;
+    timeout?: number;
+    env?: { [key in string]: string };
 }
