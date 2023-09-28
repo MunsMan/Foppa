@@ -1,3 +1,6 @@
+import * as dotenv from 'dotenv'
+
+dotenv.config()
 const variables = {
     REGION: 'eu-central-1',
     OPTIMIZATION_REQUEST_TOPIC_ARN:
