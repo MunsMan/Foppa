@@ -7,6 +7,9 @@ export default {
             httpApi: {
                 method: 'get',
                 path: '/function/{username}/{functionId}',
+                authorizer: { 
+                    name: 'authorizer',
+                }
             },
         },
         {

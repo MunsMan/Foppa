@@ -1,4 +1,6 @@
 import {
+    DeleteItemCommand,
+    DeleteItemCommandInput,
     DynamoDBClient,
     GetItemCommand,
     PutItemCommand,
@@ -61,6 +63,15 @@ class DynamoDB implements DB {
         }
         return item as undefined as DBValueReturn<T>;
     };
+
+    async deleteValue<T extends DBTables>(table: T, params: QueryParams<T>): Promise<boolean> {
+        const input: DeleteItemCommandInput = {
+            TableName: table,
+            Key: marshall(params)
+        }
+        await this.db.send(new DeleteItemCommand(input))
+        return true
+    }
 
     incrValue = async <T extends DBTables>(table: T, item: QueryParams<T>, key: DBNumberKey<T>) => {
         const input: UpdateItemCommandInput = {

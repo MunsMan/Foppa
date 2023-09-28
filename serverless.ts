@@ -10,10 +10,12 @@ import awsReturner from '@functions/aws/awsReturner';
 import optimizationRequest from '@functions/logging/optimizationRequest';
 import runRequest from '@functions/logging/runRequest';
 import status from '@functions/status';
-import functionService from '@functions/services/function';
-import loginService from '@functions/services/login';
-import signInService from '@functions/services/signIn';
+import functionService from '@functions/user/function';
+import loginService from '@functions/user/login';
+import signInService from '@functions/user/signIn';
 import logWatcher from '@functions/logWatcher';
+import authorizer from '@functions/authorizer';
+import deleteUser from '@functions/user/delete';
 
 const serverlessConfiguration: AWS = {
     service: 'foppa',
@@ -34,6 +36,17 @@ const serverlessConfiguration: AWS = {
         apiGateway: {
             minimumCompressionSize: 1024,
             shouldStartNameWithService: true,
+        },
+        httpApi: {
+            authorizers: {
+                authorizer: {
+                    type: 'request',
+                    functionName: 'authorizer',
+                	identitySource: ['$request.header.Authorization'],
+                    resultTtlInSeconds: 300,
+                    enableSimpleResponse: true,
+                }
+            }
         },
         environment: {
             AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1',
@@ -62,6 +75,8 @@ const serverlessConfiguration: AWS = {
         loginService,
         signInService,
         logWatcher,
+        authorizer,
+        deleteUser
     },
     package: { individually: true },
     custom: {

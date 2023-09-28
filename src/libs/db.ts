@@ -24,10 +24,13 @@ interface RegionExecutionCounter {
     executionCounter?: number;
 }
 
+type FoppaRole = 'admin' | 'user' 
+
 interface UserManager {
     username: string;
     password?: string;
     functionCounter?: number;
+    role?: FoppaRole;
 }
 
 type QueryParams<T extends DBTables> = T extends 'RegionExecutionCounter'
@@ -68,6 +71,7 @@ interface DB {
         table: T,
         item: Required<DBValueReturn<T>>
     ): Promise<DBValueReturn<T>>;
+    deleteValue<T extends DBTables>(table:T, params: QueryParams<T>):Promise<boolean>;
     incrValue<T extends DBTables>(
         table: T,
         params: QueryParams<T>,

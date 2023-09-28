@@ -41,9 +41,9 @@ const functionService: ValidatedEventAPIGatewayProxyEvent<typeof undefined> = as
         functions: response.map((item) => ({
             functionId: item.functionId,
             functionName: item.functionName,
-            executionCounter: item.executionCounter,
-        })),
-    });
+        executionCounter: item.executionCounter,
+    })),
+});
 };
 
 export const main = middyfy(functionService);

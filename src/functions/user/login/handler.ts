@@ -4,6 +4,9 @@ import DynamoDB from '@libs/dynamodb';
 import { middyfy } from '@libs/lambda';
 import schema from './schema';
 import * as bcrypt from 'bcryptjs';
+import { createSessionId } from '@libs/auth';
+
+const PRIVATE_KEY = process.env.PRIVATE_KEY
 
 const db = new DynamoDB();
 
@@ -13,8 +16,10 @@ const loginService: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (e
     console.log(username, password);
     try {
         const user = await db.getValue('UserManager', { username });
+        console.log(user)
         if (bcrypt.compareSync(password, user.password)) {
-            return formatJSONResponse({ status: 'valid', username });
+            const token = createSessionId(username, user.role, PRIVATE_KEY)
+            return formatJSONResponse({ status: 'valid', username, token });
         }
         return formatJSONResponse({ status: 'wrong', username }, 404);
     } catch (error) {
