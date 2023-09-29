@@ -109,6 +109,7 @@ const concurrentWorkflows = async (
             return res;
         }, {});
 
+    sleep(120000);
     const cloudLogs: {
         functionName: string;
         region: string;
@@ -144,8 +145,6 @@ const concurrentWorkflows = async (
             executionStarts: number[];
         }[];
     }[];
-
-    sleep(60000);
 
     const result: Result = cloudLogs.reduce<Result>((result, value) => {
         value.logs.logs;
