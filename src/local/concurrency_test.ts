@@ -6,12 +6,6 @@ import { existsSync, mkdirSync } from 'fs';
 import { writeFile, readFile } from 'fs/promises';
 import variables from 'variables';
 
-interface FirstResponse {
-    username: string;
-    functionId: string;
-    executionId: number;
-}
-
 const BACKEND_URL = variables.SERVICE_URL;
 // @ts-ignore
 const CONCURRENT_REQUESTS = 300;
@@ -36,8 +30,14 @@ const pullLogs = async (executionId: string) => {
 // @ts-ignore
 const triggerWorkflow = async (requestAmount: number) => {
     const requests = Array(requestAmount).fill(1);
-    const responses = await Promise.allSettled(requests.map(() => triggerFunction({ n: FIB_N })));
-    const status = responses.reduce<{ success: number; failed: number; data: FirstResponse[] }>(
+    const responses = await Promise.allSettled(
+        requests.map(() => triggerFunction({ n: FIB_N }))
+    );
+    const status = responses.reduce<{
+        success: number;
+        failed: number;
+        data: FirstResponse[];
+    }>(
         (prev, cur) => {
             if (cur.status === 'fulfilled') {
                 prev.success++;
@@ -81,7 +81,10 @@ interface CloudWatchRequest {
     region: Region;
     requestId: string;
 }
-type CloudWatchResponse = { requests: CloudWatchRequest[]; response: LogWatcherResponse };
+type CloudWatchResponse = {
+    requests: CloudWatchRequest[];
+    response: LogWatcherResponse;
+};
 
 const pullLog = async (
     functionName: string,
@@ -113,16 +116,22 @@ type PromiseObject = {
     }>;
 };
 
-const pullFoppaRuntimeLogs = async (requests: CloudWatchRequest[], startTime: number) => {
-    const batches = requests.reduce<Map<string, CloudWatchRequest[]>>((res, value) => {
-        let batch: CloudWatchRequest[] = [];
-        if (res.has(value.functionName)) {
-            batch = res.get(value.functionName);
-        }
-        batch.push(value);
-        res.set(value.functionName, batch);
-        return res;
-    }, new Map());
+const pullFoppaRuntimeLogs = async (
+    requests: CloudWatchRequest[],
+    startTime: number
+) => {
+    const batches = requests.reduce<Map<string, CloudWatchRequest[]>>(
+        (res, value) => {
+            let batch: CloudWatchRequest[] = [];
+            if (res.has(value.functionName)) {
+                batch = res.get(value.functionName);
+            }
+            batch.push(value);
+            res.set(value.functionName, batch);
+            return res;
+        },
+        new Map()
+    );
     const promises: PromiseObject = {};
     for (const [key, batch] of batches.entries()) {
         interface ReduceSet {
@@ -158,7 +167,8 @@ const pullFoppaRuntimeLogs = async (requests: CloudWatchRequest[], startTime: nu
                 request.executionStart = startTime.getTime();
                 return request;
             });
-        const regionPromise: { [R in string]: Promise<CloudWatchResponse> } = {};
+        const regionPromise: { [R in string]: Promise<CloudWatchResponse> } =
+            {};
         regionRequests.forEach((request) => {
             const promise = new Promise<CloudWatchResponse>((resolve) => {
                 if (Number.isNaN(request.executionStart)) {
@@ -166,7 +176,8 @@ const pullFoppaRuntimeLogs = async (requests: CloudWatchRequest[], startTime: nu
                     request.executionStart = startTime;
                 }
                 pullLog(
-                    mapFunctionNames[request.functionName] ?? request.functionName,
+                    mapFunctionNames[request.functionName] ??
+                        request.functionName,
                     request.requestIds,
                     request.region,
                     request.executionStart
@@ -220,7 +231,8 @@ const main = async () => {
                         functionName: 'firstResponder',
                         region: variables.REGION,
                         requestId: item.logs.firstResponder.logs.requestId,
-                        executionStart: item.logs.firstResponder.logs.executionStart,
+                        executionStart:
+                            item.logs.firstResponder.logs.executionStart,
                     },
                     {
                         functionName: 'scheduler',
@@ -243,61 +255,80 @@ const main = async () => {
                     {
                         functionName: 'awsReturner',
                         region: item.logs.scheduler.deployment.region as Region,
-                        requestId: item.logs.returner.awsWrapper.returnerRequestId,
-                        executionStart: item.logs.returner.awsWrapper.awsExecutionStart,
+                        requestId:
+                            item.logs.returner.awsWrapper.returnerRequestId,
+                        executionStart:
+                            item.logs.returner.awsWrapper.awsExecutionStart,
                     },
                     {
                         functionName: 'awsRunner',
                         region: item.logs.scheduler.deployment.region as Region,
-                        requestId: item.logs.returner.awsWrapper.runnerRequestId,
-                        executionStart: item.logs.returner.awsWrapper.awsExecutionStart,
+                        requestId:
+                            item.logs.returner.awsWrapper.runnerRequestId,
+                        executionStart:
+                            item.logs.returner.awsWrapper.awsExecutionStart,
                     },
                     {
                         functionName: item.logs.scheduler.decisionLogs.filter(
-                            (log) => log.pregion === item.logs.returner.awsWrapper.pregion
+                            (log) =>
+                                log.pregion ===
+                                item.logs.returner.awsWrapper.pregion
                         )[0].functionName,
                         region: item.logs.scheduler.deployment.region as Region,
                         requestId: item.logs.returner.userFunctionRequestId,
-                        executionStart: item.logs.returner.awsWrapper.awsExecutionStart,
+                        executionStart:
+                            item.logs.returner.awsWrapper.awsExecutionStart,
                     },
                 ];
             }
         })
         .filter((x) => x);
-    const cloudwatchlogs = await pullFoppaRuntimeLogs(requests.flat(), startTime);
-    const logData = Object.entries(cloudwatchlogs).map(([key, regionObjects]) => {
-        const regions = Object.entries(regionObjects).map<{
-            region: string;
-            durations: number[];
-            averageDuration: number;
-        }>(([region, value]) => {
-            const reports = value.response.logs.filter((log) => log.message.includes('REPORT'));
-            const starts = value.response.logs.filter((log) => log.message.includes('START'));
-            const durations = reports.map((report) =>
-                Number(
-                    report.message
-                        .split('\t')
-                        .filter((text) => text.includes('Duration'))[0]
-                        .split(' ')[1]
-                )
-            );
-            const executionStarts = starts.map((start) => start.timestamp);
+    const cloudwatchlogs = await pullFoppaRuntimeLogs(
+        requests.flat(),
+        startTime
+    );
+    const logData = Object.entries(cloudwatchlogs).map(
+        ([key, regionObjects]) => {
+            const regions = Object.entries(regionObjects).map<{
+                region: string;
+                durations: number[];
+                averageDuration: number;
+            }>(([region, value]) => {
+                const reports = value.response.logs.filter((log) =>
+                    log.message.includes('REPORT')
+                );
+                const starts = value.response.logs.filter((log) =>
+                    log.message.includes('START')
+                );
+                const durations = reports.map((report) =>
+                    Number(
+                        report.message
+                            .split('\t')
+                            .filter((text) => text.includes('Duration'))[0]
+                            .split(' ')[1]
+                    )
+                );
+                const executionStarts = starts.map((start) => start.timestamp);
+                return {
+                    region,
+                    durations,
+                    averageDuration:
+                        durations.reduce((res, value) => res + value, 0) /
+                        durations.length,
+                    executionStarts,
+                };
+            });
+            const durations = regions.map((region) => region.durations).flat();
             return {
-                region,
+                functionName: key,
                 durations,
                 averageDuration:
-                    durations.reduce((res, value) => res + value, 0) / durations.length,
-                executionStarts,
+                    durations.reduce((res, value) => res + value, 0) /
+                    durations.length,
+                regions,
             };
-        });
-        const durations = regions.map((region) => region.durations).flat();
-        return {
-            functionName: key,
-            durations,
-            averageDuration: durations.reduce((res, value) => res + value, 0) / durations.length,
-            regions,
-        };
-    });
+        }
+    );
     await saveData(logData, 'executionLogs');
     console.log('Done 🥳🎉\nLogs are saved to disk 💾');
 };

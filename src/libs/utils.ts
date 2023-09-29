@@ -11,7 +11,14 @@ export function isRegion(region: string): region is Region {
 export const resolveObject = async <T extends Record<keyof T, any>>(
     obj: T
 ): Promise<{ [K in keyof T]: Awaited<T[K]> }> => {
-    return Promise.all(Object.entries(obj).map(async ([k, v]) => [k, await v])).then(
-        Object.fromEntries
-    );
+    return Promise.all(
+        Object.entries(obj).map(async ([k, v]) => [k, await v])
+    ).then(Object.fromEntries);
 };
+
+export const isFulfilled = <T>(
+    p: PromiseSettledResult<T>
+): p is PromiseFulfilledResult<T> => p.status === 'fulfilled';
+export const isRejected = <T>(
+    p: PromiseSettledResult<T>
+): p is PromiseRejectedResult => p.status === 'rejected';

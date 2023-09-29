@@ -157,35 +157,45 @@ interface FunctionConfig {
     env?: { [key in string]: string };
 }
 
-type SignUpResponse = {
-    username: string,
-    status: 'alreadyExists'
-} | {username: string, status: 'created', token: string}
+type SignUpResponse =
+    | {
+          username: string;
+          status: 'alreadyExists';
+      }
+    | { username: string; status: 'created'; token: string };
 
-type LoginResponse = {
-    username: string,
-    status: 'wrong' | 'notFound'
-} | {username: string, status: 'valid', token: string}
+type LoginResponse =
+    | {
+          username: string;
+          status: 'wrong' | 'notFound';
+      }
+    | { username: string; status: 'valid'; token: string };
 
-type FunctionResponse =  SingleFunctionResponse | UserFunctionsResponse
+type FunctionResponse = SingleFunctionResponse | UserFunctionsResponse;
 
 interface SingleFunctionResponse {
-    username: string
-    functionId: string,
+    username: string;
+    functionId: string;
     regions: {
         region: string;
-        provider: "aws";
+        provider: 'aws';
         regionExecutionCount: number;
-    }[]
-    functionName: string
-    executionCounter: number
+    }[];
+    functionName: string;
+    executionCounter: number;
 }
 
 interface UserFunctionsResponse {
     username: string;
     functions: {
-        functionId: string; 
-        functionName: string; 
-        executionCounter: number
-    }[]
+        functionId: string;
+        functionName: string;
+        executionCounter: number;
+    }[];
+}
+
+interface FirstResponse {
+    username: string;
+    functionId: string;
+    executionId: number;
 }
