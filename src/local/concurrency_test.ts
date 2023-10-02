@@ -1,6 +1,7 @@
 import { Region } from '@consts/aws';
 import { sleep, resolveObject } from '@libs/utils';
 import axios from 'axios';
+import { randomUUID } from 'crypto';
 import { existsSync, mkdirSync } from 'fs';
 // @ts-ignore
 import { writeFile, readFile } from 'fs/promises';
@@ -11,7 +12,7 @@ const BACKEND_URL = variables.SERVICE_URL;
 const CONCURRENT_REQUESTS = 300;
 const USERNAME = 'munsman';
 const FUNCTION_ID = '4';
-const TEST_ID = '2023-09-21T13:46:04.264Z'; // new Date().toISOString();
+const TEST_ID = randomUUID(); // new Date().toISOString();
 const FIB_N = 42;
 
 const triggerFunction = async (payload?: object) => {
@@ -68,11 +69,11 @@ const pullRuntimeStatus = async (executionIds: number[]) => {
 
 // @ts-ignore
 const saveData = async (outputData: any, name: string) => {
-    const dir = `test/${TEST_ID}`;
+    const dir = `test/response/${CONCURRENT_REQUESTS}/${TEST_ID}`;
     if (!existsSync(dir)) {
         mkdirSync(dir, { recursive: true });
     }
-    await writeFile(`test/${TEST_ID}/${name}.json`, JSON.stringify(outputData));
+    await writeFile(`${dir}/${name}.json`, JSON.stringify(outputData));
 };
 
 interface CloudWatchRequest {
@@ -199,30 +200,30 @@ const pullFoppaRuntimeLogs = async (
 
 // @ts-ignore
 const main = async () => {
-    // const startTime = Date.now();
-    // const status = await triggerWorkflow(CONCURRENT_REQUESTS);
-    // console.log(`${CONCURRENT_REQUESTS} Requests are triggered 🚀`);
-    // console.log(
-    //     `Successrate: ${Math.round((status.success / CONCURRENT_REQUESTS) * 100)}% with ${
-    //         status.success
-    //     } ✅ and ${status.failed} ❌`
-    // );
-    // saveData(status, 'statusLogs');
-    // saveData({ startTime, c: CONCURRENT_REQUESTS, n: FIB_N }, 'notes');
-    // await sleep(120000);
-    // // const status: { success: number; failed: number; data: FirstResponse[] } = JSON.parse(
-    // //     (await readFile('test/2023-09-20T13:42:51.029Z/statusLogs.json')).toString()
-    // // );
-    // const executionIds = status.data.map((value) => value.executionId);
-    // const outputData = await pullRuntimeStatus(executionIds);
-    // console.log('Foppa System logs are there 💽');
-    // saveData(outputData, 'foppaLogs');
-    const startTime: number = JSON.parse(
-        (await readFile(`test/${TEST_ID}/notes.json`)).toString()
-    ).startTime;
-    const outputData: StatusResponse[] = JSON.parse(
-        (await readFile(`test/${TEST_ID}/foppaLogs.json`)).toString()
+    const startTime = Date.now();
+    const status = await triggerWorkflow(CONCURRENT_REQUESTS);
+    console.log(`${CONCURRENT_REQUESTS} Requests are triggered 🚀`);
+    console.log(
+        `Successrate: ${Math.round(
+            (status.success / CONCURRENT_REQUESTS) * 100
+        )}% with ${status.success} ✅ and ${status.failed} ❌`
     );
+    saveData(status, 'statusLogs');
+    saveData({ startTime, c: CONCURRENT_REQUESTS, n: FIB_N }, 'notes');
+    await sleep(120000);
+    // const status: { success: number; failed: number; data: FirstResponse[] } = JSON.parse(
+    //     (await readFile('test/2023-09-20T13:42:51.029Z/statusLogs.json')).toString()
+    // );
+    const executionIds = status.data.map((value) => value.executionId);
+    const outputData = await pullRuntimeStatus(executionIds);
+    console.log('Foppa System logs are there 💽');
+    saveData(outputData, 'foppaLogs');
+    // const startTime: number = JSON.parse(
+    //     (await readFile(`test/${TEST_ID}/notes.json`)).toString()
+    // ).startTime;
+    // const outputData: StatusResponse[] = JSON.parse(
+    //     (await readFile(`test/${TEST_ID}/foppaLogs.json`)).toString()
+    // );
     const requests = outputData
         .map<CloudWatchRequest[]>((item) => {
             if (item.status === 'returner') {
