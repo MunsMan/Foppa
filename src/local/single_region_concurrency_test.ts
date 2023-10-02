@@ -1,21 +1,25 @@
 import { Region } from '@consts/aws';
 import { sleep, resolveObject } from '@libs/utils';
 import axios from 'axios';
+import { randomUUID } from 'crypto';
 import { existsSync, mkdirSync } from 'fs';
 import { writeFile } from 'fs/promises';
 import variables from 'variables';
 
 const BACKEND_URL = variables.SERVICE_URL;
-const FUNCTION_URL = 'https://kjhymqxiap7esobe6ukrwzbfby0qgixo.lambda-url.eu-central-1.on.aws/';
+const FUNCTION_URL =
+    'https://kjhymqxiap7esobe6ukrwzbfby0qgixo.lambda-url.eu-central-1.on.aws/';
 const FUNCTION_NAME = 'not-foppa-fib-test';
 const REGION = 'eu-central-1';
 const LOG_PREFIX = 'singleRegion';
-const TEST_ID = new Date().toISOString();
+let TEST_ID = randomUUID();
 // @ts-ignore
-const CONCURRENT_REQUESTS = 300;
-const FIB_N = 42;
+let CONCURRENT_REQUESTS = 300;
+const FIB_N = 40;
 
-const triggerFunction = async (payload?: object): Promise<CloudWatchRequest> => {
+const triggerFunction = async (
+    payload?: object
+): Promise<CloudWatchRequest> => {
     const executionStart = Date.now();
     const response = await axios.post(FUNCTION_URL, payload, {
         headers: { 'Content-Type': 'application/json' },
@@ -31,8 +35,14 @@ const triggerFunction = async (payload?: object): Promise<CloudWatchRequest> => 
 // @ts-ignore
 const triggerWorkflow = async (requestAmount: number) => {
     const requests = Array(requestAmount).fill(1);
-    const responses = await Promise.allSettled(requests.map(() => triggerFunction({ n: FIB_N })));
-    const status = responses.reduce<{ success: number; failed: number; data: CloudWatchRequest[] }>(
+    const responses = await Promise.allSettled(
+        requests.map(() => triggerFunction({ n: FIB_N }))
+    );
+    const status = responses.reduce<{
+        success: number;
+        failed: number;
+        data: CloudWatchRequest[];
+    }>(
         (prev, cur) => {
             if (cur.status === 'fulfilled') {
                 prev.success++;
@@ -54,9 +64,13 @@ const saveData = async (outputData: any, name: string) => {
     if (!existsSync(dir)) {
         mkdirSync(dir, { recursive: true });
     }
-    await writeFile(`${dir}/${LOG_PREFIX}-${name}.json`, JSON.stringify(outputData), {
-        flag: 'wx',
-    });
+    await writeFile(
+        `${dir}/${LOG_PREFIX}-${name}.json`,
+        JSON.stringify(outputData),
+        {
+            flag: 'wx',
+        }
+    );
 };
 
 interface CloudWatchRequest {
@@ -65,7 +79,10 @@ interface CloudWatchRequest {
     region: Region;
     requestId: string;
 }
-type CloudWatchResponse = { requests: CloudWatchRequest[]; response: LogWatcherResponse };
+type CloudWatchResponse = {
+    requests: CloudWatchRequest[];
+    response: LogWatcherResponse;
+};
 
 const pullLog = async (
     functionName: string,
@@ -98,15 +115,18 @@ type PromiseObject = {
 };
 
 const pullFoppaRuntimeLogs = async (requests: CloudWatchRequest[]) => {
-    const batches = requests.reduce<Map<string, CloudWatchRequest[]>>((res, value) => {
-        let batch: CloudWatchRequest[] = [];
-        if (res.has(value.functionName)) {
-            batch = res.get(value.functionName);
-        }
-        batch.push(value);
-        res.set(value.functionName, batch);
-        return res;
-    }, new Map());
+    const batches = requests.reduce<Map<string, CloudWatchRequest[]>>(
+        (res, value) => {
+            let batch: CloudWatchRequest[] = [];
+            if (res.has(value.functionName)) {
+                batch = res.get(value.functionName);
+            }
+            batch.push(value);
+            res.set(value.functionName, batch);
+            return res;
+        },
+        new Map()
+    );
     const promises: PromiseObject = {};
     for (const [key, batch] of batches.entries()) {
         interface ReduceSet {
@@ -139,11 +159,13 @@ const pullFoppaRuntimeLogs = async (requests: CloudWatchRequest[]) => {
                 request.executionStart = startTime.getTime();
                 return request;
             });
-        const regionPromise: { [R in string]: Promise<CloudWatchResponse> } = {};
+        const regionPromise: { [R in string]: Promise<CloudWatchResponse> } =
+            {};
         regionRequests.forEach((request) => {
             const promise = new Promise<CloudWatchResponse>((resolve) => {
                 pullLog(
-                    mapFunctionNames[request.functionName] ?? request.functionName,
+                    mapFunctionNames[request.functionName] ??
+                        request.functionName,
                     request.requestIds,
                     request.region,
                     request.executionStart
@@ -167,9 +189,9 @@ const main = async () => {
     const status = await triggerWorkflow(CONCURRENT_REQUESTS);
     console.log(`${CONCURRENT_REQUESTS} Requests are triggered 🚀`);
     console.log(
-        `Successrate: ${status.success / CONCURRENT_REQUESTS} with ${status.success} ✅ and ${
-            status.failed
-        } ❌`
+        `Successrate: ${status.success / CONCURRENT_REQUESTS} with ${
+            status.success
+        } ✅ and ${status.failed} ❌`
     );
     saveData({ startTime, c: CONCURRENT_REQUESTS, n: FIB_N }, 'notes');
     saveData(status, 'statusLogs');
@@ -177,41 +199,59 @@ const main = async () => {
     const outputData: CloudWatchRequest[] = status.data.map((value) => value);
     // const outputData: StatusResponse[] = JSON.parse((await readFile('foppaLogs.json')).toString());
     const cloudwatchlogs = await pullFoppaRuntimeLogs(outputData);
-    const logData = Object.entries(cloudwatchlogs).map(([key, regionObjects]) => {
-        const regions = Object.entries(regionObjects).map<{
-            region: string;
-            durations: number[];
-            averageDuration: number;
-        }>(([region, value]) => {
-            const reports = value.response.logs.filter((log) => log.message.includes('REPORT'));
-            const starts = value.response.logs.filter((log) => log.message.includes('START'));
-            const durations = reports.map((report) =>
-                Number(
-                    report.message
-                        .split('\t')
-                        .filter((text) => text.includes('Duration'))[0]
-                        .split(' ')[1]
-                )
-            );
-            const executionStarts = starts.map((start) => start.timestamp);
+    const logData = Object.entries(cloudwatchlogs).map(
+        ([key, regionObjects]) => {
+            const regions = Object.entries(regionObjects).map<{
+                region: string;
+                durations: number[];
+                averageDuration: number;
+            }>(([region, value]) => {
+                const reports = value.response.logs.filter((log) =>
+                    log.message.includes('REPORT')
+                );
+                const starts = value.response.logs.filter((log) =>
+                    log.message.includes('START')
+                );
+                const durations = reports.map((report) =>
+                    Number(
+                        report.message
+                            .split('\t')
+                            .filter((text) => text.includes('Duration'))[0]
+                            .split(' ')[1]
+                    )
+                );
+                const executionStarts = starts.map((start) => start.timestamp);
+                return {
+                    region,
+                    durations,
+                    averageDuration:
+                        durations.reduce((res, value) => res + value, 0) /
+                        durations.length,
+                    executionStarts,
+                };
+            });
+            const durations = regions.map((region) => region.durations).flat();
             return {
-                region,
+                functionName: key,
                 durations,
                 averageDuration:
-                    durations.reduce((res, value) => res + value, 0) / durations.length,
-                executionStarts,
+                    durations.reduce((res, value) => res + value, 0) /
+                    durations.length,
+                regions,
             };
-        });
-        const durations = regions.map((region) => region.durations).flat();
-        return {
-            functionName: key,
-            durations,
-            averageDuration: durations.reduce((res, value) => res + value, 0) / durations.length,
-            regions,
-        };
-    });
+        }
+    );
     await saveData(logData, 'executionLogs');
     console.log('Done 🥳🎉\nLogs are saved to disk 💾');
 };
 
-main();
+const task = async () => {
+    const range = [1, 5, 10, 50, 100, 200, 300, 500];
+    for (let i = 0; i < range.length; i++) {
+        TEST_ID = randomUUID();
+        CONCURRENT_REQUESTS = range[i];
+        await main();
+    }
+};
+
+task();
