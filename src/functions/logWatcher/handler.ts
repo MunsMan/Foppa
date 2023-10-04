@@ -1,11 +1,16 @@
 import { CloudWatchLogsClient } from '@aws-sdk/client-cloudwatch-logs';
-import { formatJSONResponse, ValidatedEventAPIGatewayProxyEvent } from '@libs/api-gateway';
+import {
+    formatJSONResponse,
+    ValidatedEventAPIGatewayProxyEvent,
+} from '@libs/api-gateway';
 import { getOldExecutionLog } from '@libs/cloudwatch';
 import { middyfy } from '@libs/lambda';
 import schema from './schema';
 
-const logWatcher: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (event) => {
-    const { region, functionName, requestIds } = event.body;
+const logWatcher: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
+    event
+) => {
+    const { region, functionName, requestIds, executionEnd } = event.body;
     let executionStart = event.body.executionStart;
     if (!executionStart) {
         const date = new Date();
@@ -16,7 +21,8 @@ const logWatcher: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (eve
         new CloudWatchLogsClient({ region }),
         functionName,
         requestIds,
-        executionStart
+        executionStart,
+        executionEnd
     );
     const response: LogWatcherResponse = {
         requestIds,

@@ -5,7 +5,7 @@ import {
     LogStream,
     OutputLogEvent,
 } from '@aws-sdk/client-cloudwatch-logs';
-import { sleep } from './utils';
+import { avoidThrottling, sleep } from './utils';
 
 export const getExecutionLog = async (
     cloudwatchClient: CloudWatchLogsClient,
@@ -15,15 +15,28 @@ export const getExecutionLog = async (
 ) => {
     const logGroupName = `/aws/lambda/${functionName}`;
     for (let i = 0; i < 5; i++) {
-        const logStreams = await getLogStreams(cloudwatchClient, logGroupName, executionStart);
+        const logStreams = await getLogStreams(
+            cloudwatchClient,
+            logGroupName,
+            executionStart
+        );
         const logs = (
             await Promise.all(
                 logStreams.map((logStream) =>
-                    getLogs(cloudwatchClient, logGroupName, logStream.logStreamName, executionStart)
+                    avoidThrottling(() =>
+                        getLogs(
+                            cloudwatchClient,
+                            logGroupName,
+                            logStream.logStreamName,
+                            executionStart
+                        )
+                    )
                 )
             )
         ).flat();
-        const functionLogs = logs.filter((log) => log.message.includes(requestId));
+        const functionLogs = logs.filter((log) =>
+            log.message.includes(requestId)
+        );
         if (functionLogs.length) {
             return functionLogs;
         }
@@ -36,15 +49,26 @@ export const getOldExecutionLog = async (
     cloudwatchClient: CloudWatchLogsClient,
     functionName: string,
     requestIds: string[],
-    executionStart?: number
+    executionStart?: number,
+    executionEnd?: number
 ) => {
     const logGroupName = `/aws/lambda/${functionName}`;
-    const logStreams = await getLogStreams(cloudwatchClient, logGroupName, executionStart);
+    const logStreams = await getLogStreams(
+        cloudwatchClient,
+        logGroupName,
+        executionStart ?? 0,
+        executionEnd ?? Date.now()
+    );
 
     const logs = (
         await Promise.all(
             logStreams.map((logStream) =>
-                getLogs(cloudwatchClient, logGroupName, logStream.logStreamName, executionStart)
+                getLogs(
+                    cloudwatchClient,
+                    logGroupName,
+                    logStream.logStreamName,
+                    executionStart
+                )
             )
         )
     ).flat();
@@ -57,7 +81,8 @@ export const getOldExecutionLog = async (
 const getLogStreams = async (
     cloudwatchClient: CloudWatchLogsClient,
     logGroupName: string,
-    executionStart: number
+    executionStart: number,
+    executionEnd: number
 ) => {
     const response = await cloudwatchClient.send(
         new DescribeLogStreamsCommand({
@@ -71,7 +96,10 @@ const getLogStreams = async (
             res.push(value);
             return res;
         }
-        if (value.lastEventTimestamp >= executionStart) {
+        if (
+            value.lastEventTimestamp >= executionStart &&
+            value.lastEventTimestamp <= executionEnd
+        ) {
             res.push(value);
         }
         return res;
@@ -83,6 +111,7 @@ const getLogs = async (
     logGroupName: string,
     logStreamName: string,
     startTime?: number,
+    endTime?: number,
     all = false
 ) => {
     const logs: OutputLogEvent[] = [];
@@ -102,6 +131,7 @@ const getLogs = async (
                     logGroupName,
                     logStreamName,
                     startTime,
+                    endTime,
                 })
             );
         if (nextBackwardToken === newNextBackwardToken) break;

@@ -9,6 +9,7 @@ export default {
         functionName: { type: 'string' },
         requestIds: { type: 'array', items: { type: 'string' } },
         executionStart: { type: 'number' },
+        executionEnd: { type: 'number' },
     },
     required: ['region', 'functionName', 'requestIds'],
 } as const;
