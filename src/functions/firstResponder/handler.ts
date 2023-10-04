@@ -6,18 +6,22 @@ import { sendMessage } from '@libs/sns';
 const TOPIC = process.env.TOPIC;
 
 const firstResponder: APIGatewayProxyEvent = async (event, context) => {
-    console.log(event);
     const executionStart = Date.now();
     const db: DB = new DynamoDB();
     const { username, functionId } = event.pathParameters;
 
-    const entry = await db.getValue('FunctionExecutionCounter', { username, functionId });
+    const entry = await db.getValue('FunctionExecutionCounter', {
+        username,
+        functionId,
+    });
     if ('executionCounter' in entry) {
-        const executionId = (await db.incrValue(
-            'FunctionExecutionCounter',
-            { username, functionId },
-            'executionCounter'
-        )).toString();
+        const executionId = (
+            await db.incrValue(
+                'FunctionExecutionCounter',
+                { username, functionId },
+                'executionCounter'
+            )
+        ).toString();
         const executionEnd = Date.now();
         const message: OptimizationRequest = {
             username,
