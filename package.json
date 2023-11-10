@@ -25,7 +25,7 @@
         "@middy/http-json-body-parser": "^3.4.0",
         "@middy/validator": "^4.5.5",
         "@types/bcryptjs": "^2.4.2",
-        "axios": "^1.4.0",
+        "axios": "^1.6.0",
         "bcryptjs": "^2.4.3",
         "dotenv": "^16.3.1",
         "jsonwebtoken": "^9.0.1",
