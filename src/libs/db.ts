@@ -24,7 +24,7 @@ interface RegionExecutionCounter {
     executionCounter?: number;
 }
 
-type FoppaRole = 'admin' | 'user' 
+type FoppaRole = 'admin' | 'user';
 
 interface UserManager {
     username: string;
@@ -62,7 +62,10 @@ type DBNumberKey<T extends DBTables> = T extends 'RegionExecutionCounter'
     : never;
 
 interface DB {
-    getValue<T extends DBTables>(table: T, params: QueryParams<T>): Promise<DBValueReturn<T>>;
+    getValue<T extends DBTables>(
+        table: T,
+        params: QueryParams<T>
+    ): Promise<DBValueReturn<T>>;
     getValues<T extends DBTables>(
         table: T,
         params: Partial<QueryParams<T>>
@@ -71,7 +74,10 @@ interface DB {
         table: T,
         item: Required<DBValueReturn<T>>
     ): Promise<DBValueReturn<T>>;
-    deleteValue<T extends DBTables>(table:T, params: QueryParams<T>):Promise<boolean>;
+    deleteValue<T extends DBTables>(
+        table: T,
+        params: QueryParams<T>
+    ): Promise<boolean>;
     incrValue<T extends DBTables>(
         table: T,
         params: QueryParams<T>,
