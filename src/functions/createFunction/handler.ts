@@ -23,10 +23,9 @@ const error = () => {
     });
 };
 
-const createFunction: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
-    event,
-    context
-) => {
+const createFunction: ValidatedEventAPIGatewayProxyEvent<
+    typeof schema
+> = async (event, context) => {
     // Get Userdata for lambda client
 
     const functionName = event.body.functionName;
@@ -34,11 +33,18 @@ const createFunction: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async 
     const role = event.body.role;
     const handler = event.body.handler;
     const regions = event.body.regions;
-    const code = Buffer.from(event.body.zip_file.split(',')[1] ?? event.body.zip_file, 'base64');
+    const code = Buffer.from(
+        event.body.zip_file.split(',')[1] ?? event.body.zip_file,
+        'base64'
+    );
 
     const db = new DynamoDB();
 
-    const functionId = await db.incrValue('UserManager', { username }, 'functionCounter');
+    const functionId = await db.incrValue(
+        'UserManager',
+        { username },
+        'functionCounter'
+    );
     const accountId = context.invokedFunctionArn.split(':')[4] ?? '';
     const functionConfig: FunctionConfig = {
         functionName,
@@ -52,7 +58,14 @@ const createFunction: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async 
     };
     await Promise.all([
         ...regions.map((region) =>
-            uploadFunction(region, db, username, functionId.toString(), accountId, functionConfig)
+            uploadFunction(
+                region,
+                db,
+                username,
+                functionId.toString(),
+                accountId,
+                functionConfig
+            )
         ),
         await db.putValue('FunctionExecutionCounter', {
             username,
@@ -63,7 +76,7 @@ const createFunction: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async 
     ]);
     return formatJSONResponse({
         message: 'Function created',
-        functionId: functionId,
+        functionId: functionId.toString(),
     });
 };
 
@@ -86,11 +99,15 @@ const uploadFunction = async (
     const runnerResponse = wrapperUploadResponse[0];
     const returnerResponse = wrapperUploadResponse[1];
     if (runnerResponse.status === 'rejected') {
-        console.log(`[ERROR] - unable to create AWS Runner:\n${runnerResponse.reason}`);
+        console.log(
+            `[ERROR] - unable to create AWS Runner:\n${runnerResponse.reason}`
+        );
         return error();
     }
     if (returnerResponse.status === 'rejected') {
-        console.log(`[ERROR] - unable to create AWS Returner:\n${returnerResponse.reason}`);
+        console.log(
+            `[ERROR] - unable to create AWS Returner:\n${returnerResponse.reason}`
+        );
         return error();
     }
 
@@ -104,7 +121,10 @@ const uploadFunction = async (
     console.log(runnerARN, returnerARN);
 
     const apiName = `foppa-${region}-api`;
-    const { ApiEndpoint: runnerUrl, ApiId: apiId } = await api.setupApiGateway(apiName, runnerARN);
+    const { ApiEndpoint: runnerUrl, ApiId: apiId } = await api.setupApiGateway(
+        apiName,
+        runnerARN
+    );
     const sourceArn = `arn:aws:execute-api:${region}:${accountId}:${apiId}/*/*/invoke`;
 
     const userLambdaARN = isCreateOutput(lambdaResponse)
