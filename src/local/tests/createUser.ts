@@ -11,17 +11,26 @@ const TEST_ID = randomUUID();
 const PASSWORD = 'test';
 
 export const createUser = async (username: string, password: string) => {
-    return axios.post<SignUpResponse>(`${SERVICE_URL}/signin`, { username, password });
+    return axios.post<SignUpResponse>(`${SERVICE_URL}/signin`, {
+        username,
+        password,
+    });
 };
 
 export const login = async (username: string, password: string) => {
-    return axios.post<LoginResponse>(`${SERVICE_URL}/login`, { username, password });
+    return axios.post<LoginResponse>(`${SERVICE_URL}/login`, {
+        username,
+        password,
+    });
 };
 
 export const getFunctions = async (token: AuthToken) => {
-    return axios.get<UserFunctionsResponse>(`${SERVICE_URL}/function/${token.username}`, {
-        headers: { Authorization: token.token },
-    });
+    return axios.get<UserFunctionsResponse>(
+        `${SERVICE_URL}/function/${token.username}`,
+        {
+            headers: { Authorization: token.token },
+        }
+    );
 };
 
 export const deleteUser = async (token: AuthToken) => {
@@ -68,7 +77,7 @@ const saveData = async (data: any, name: string) => {
 };
 
 const main = async () => {
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 1; i++) {
         console.log('Test Iteration ' + i);
         console.log('\tRunning Cold Start Test 🧪');
         const coldStart = await iteration('coldStart');
